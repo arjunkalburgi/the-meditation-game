@@ -30,4 +30,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages  # Deploy to GitHub Pages branch
+          folder: build      # Change if your build output is in a different directory
