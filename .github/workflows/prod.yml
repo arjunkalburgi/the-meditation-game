@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # ✅ Grant write permissions to GitHub Actions
   pages: write
   id-token: write
 
@@ -34,3 +34,4 @@ jobs:
         with:
           branch: gh-pages
           folder: build
+          token: ${{ secrets.GITHUB_TOKEN }}  # ✅ Ensure correct token is used
