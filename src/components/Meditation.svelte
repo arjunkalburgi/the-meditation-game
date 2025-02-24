@@ -2,9 +2,10 @@
 	import { fade } from "svelte/transition";
 	import { onDestroy } from "svelte";
 	import { writable, derived, get } from "svelte/store"; 
+	import { createEventDispatcher } from "svelte";
 
 	export let nextStep: () => void;
-	export let closeModal: () => void;
+	const dispatch = createEventDispatcher<{ complete: number[] }>();
 
 	// Timer settings
 	const duration: number = 120;
@@ -28,6 +29,7 @@
 				if (t > 0) return t - 1;
 				clearInterval(timer);
 				console.log("Meditation complete! Click data:", get(clickTimestamps));
+				dispatch("complete", get(clickTimestamps));
 				nextStep();
 				return 0;
 			});
@@ -43,6 +45,11 @@
 		clickTimestamps.update((arr) => [...arr, timestamp]);
 		console.log(`Click ${get(clickCount)} recorded at ${timestamp} seconds`);
 	};
+
+	const handleExit = () => {
+		dispatch("complete", get(clickTimestamps));
+		nextStep();
+	}
 </script>
 
 <div class="w-full h-full flex flex-col items-center justify-center relative pointer-events-none">
@@ -51,7 +58,7 @@
 
 	<button 
 		class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-outlined px-4 py-2 pointer-events-auto"
-		on:click={closeModal} 
+		on:click={handleExit} 
 		transition:fade
 	>
 		Exit Meditation
