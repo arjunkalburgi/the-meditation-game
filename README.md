@@ -1,5 +1,7 @@
 # The Meditation Game
 
+Play the game at www.arjunkalburgi.com/the-meditation-game
+
 ```
 
 ## Developing
