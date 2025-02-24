@@ -5,10 +5,10 @@
 	import { createEventDispatcher } from "svelte";
 
 	export let nextStep: () => void;
+	export let duration: number;
 	const dispatch = createEventDispatcher<{ complete: number[] }>();
 
 	// Timer settings
-	const duration: number = 120;
 	const timeLeft = writable<number>(duration);
 	const clickCount = writable<number>(0);
 	const clickTimestamps = writable<number[]>([]);
@@ -53,17 +53,6 @@
 </script>
 
 <div class="w-full h-full flex flex-col items-center justify-center relative pointer-events-none">
-	<!-- Fullscreen Tap Button -->
-	<button class="absolute inset-0 w-full h-full bg-transparent pointer-events-auto" on:click={handleClick}></button>
-
-	<button 
-		class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-outlined px-4 py-2 pointer-events-auto"
-		on:click={handleExit} 
-		transition:fade
-	>
-		Exit Meditation
-	</button>
-
 	<div class="absolute flex flex-col items-center pointer-events-auto">
 		<!-- Circular Timer -->
 		<svg class="w-32 h-32" viewBox="0 0 100 100">
@@ -84,4 +73,15 @@
 
 		<p class="text-lg mt-4 text-center">Tap anywhere on the screen to record your distractions</p>
 	</div>
+
+	<!-- Fullscreen Tap Button -->
+	<button class="absolute inset-0 w-full h-full bg-transparent pointer-events-auto" on:click={handleClick}></button>
+
+	<button 
+		class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-outlined px-4 py-2 pointer-events-auto"
+		on:click={handleExit} 
+		transition:fade
+	>
+		Exit Meditation
+	</button>
 </div>

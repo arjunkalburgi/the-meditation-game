@@ -23,7 +23,7 @@
 			} else {
 				clearInterval(interval);
 			}
-		}, 1000); // 800ms delay between each
+		}, 1000);
 	});
 </script>
 

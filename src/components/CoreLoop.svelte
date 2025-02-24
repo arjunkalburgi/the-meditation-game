@@ -8,6 +8,7 @@
 	// export let message;
 	export let show = false;
 	let step: number = 1;
+	let duration: number = 120;
 	let meditationResults: number[] = [];
 
 	const closeModal = () => {
@@ -33,9 +34,9 @@
 			{#if step === 1}
 				<Instructions {nextStep} {closeModal} />
 			{:else if step === 2}
-				<Meditation {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
+				<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
 			{:else}
-				<Results {closeModal} {meditationResults} />
+				<Results {duration} {closeModal} {meditationResults} />
 			{/if}
 		</div>
 	</div>
