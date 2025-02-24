@@ -16,6 +16,18 @@
 			</button>
 		</div>
 	</div>
+
+	<div class="absolute bottom-6 text-center text-sm text-gray-500">
+		<p>
+			Learn to meditate for real at 
+			<a href="https://www.dhamma.org" target="_blank" class="text-blue-500 underline">dhamma.org ↗</a>
+		</p>
+		<p class="mt-2">
+			This app was made by Arjun Kalburgi, PM with 5 years experience. 
+			Hire him to build your 0-1 consumer products! 
+			<a href="https://www.linkedin.com/in/arjunkalburgi" target="_blank" class="text-blue-500 underline">View LinkedIn ↗</a>
+		</p>
+	</div>
 </div>
 
 <Modal bind:show={showModal} />
