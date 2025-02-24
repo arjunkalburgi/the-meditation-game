@@ -1,5 +1,9 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const dev = process.env.VITE_NODE_ENV === 'development';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -15,7 +19,7 @@ const config = {
 			fallback: 'index.html',  // Required for SPA routing
         }),
 		paths: {
-			base: '/the-meditation-game',
+			base: dev ? '' : '/the-meditation-game',
 		}
 	}
 };
