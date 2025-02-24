@@ -37,6 +37,7 @@
   },
   "type": "module",
   "dependencies": {
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "posthog-js": "^1.223.3"
   }
 }
