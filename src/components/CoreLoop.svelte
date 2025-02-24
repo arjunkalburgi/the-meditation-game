@@ -27,7 +27,7 @@
 			{#if step === 1}
 				<Instructions {nextStep} {closeModal} />
 			{:else if step === 2}
-				<Meditation {nextStep} />
+				<Meditation {nextStep} {closeModal} />
 			{:else}
 				<Results {closeModal} />
 			{/if}
