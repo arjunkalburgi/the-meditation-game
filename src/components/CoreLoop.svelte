@@ -4,8 +4,8 @@
 	import Meditation from "./Meditation.svelte";
 	import Results from "./Results.svelte";
 
-	export let title;
-	export let message;
+	// export let title;
+	// export let message;
 	export let show = false;
 	let step = 1;
 
@@ -22,8 +22,8 @@
 {#if show}
 	<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" transition:fade={{ duration: 500 }}>
 		<div class="fixed inset-0 bg-white flex flex-col items-center justify-center p-6" transition:fade={{ duration: 500 }}>
-			<h2 class="text-lg font-semibold">{title}</h2>
-			<p class="mt-2">{message}</p>
+			<!-- <h2 class="text-lg font-semibold">{title}</h2>
+			<p class="mt-2">{message}</p> -->
 			{#if step === 1}
 				<Instructions {nextStep} {closeModal} />
 			{:else if step === 2}

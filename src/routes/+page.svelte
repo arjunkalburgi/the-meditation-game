@@ -18,7 +18,8 @@
 	</div>
 </div>
 
-<Modal title={modalTitle} message={modalMessage} bind:show={showModal} />
+<Modal bind:show={showModal} />
+<!-- <Modal title={modalTitle} message={modalMessage} bind:show={showModal} /> -->
 
 <style lang="postcss">
 	.container {
