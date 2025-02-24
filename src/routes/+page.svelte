@@ -1,5 +1,5 @@
 <script>
-	import Modal from "$components/MeditationCoreLoop.svelte";
+	import Modal from "$components/CoreLoop.svelte";
 
 	let showModal = false;
 	let modalTitle = "Start Meditation";
