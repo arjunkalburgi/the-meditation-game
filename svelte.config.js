@@ -1,5 +1,6 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -20,6 +21,9 @@ const config = {
         }),
 		paths: {
 			base: dev ? '' : '/the-meditation-game',
+		},
+		alias: {
+			$components: path.resolve('./src/components')
 		}
 	}
 };
