@@ -1,17 +1,26 @@
-<script>
+<script lang="ts">
 	import Modal from "$components/CoreLoop.svelte";
 
-	let showModal = false;
-	let modalTitle = "Start Meditation";
-	let modalMessage = "Are you ready to begin your meditation session?";
+	let showModal: boolean = false;
+	let modalTitle: String = "Start Meditation";
+	let modalMessage: String = "Are you ready to begin your meditation session?";
+	let audioContext: AudioContext | null = null;
+
+	const startMeditation = () => {
+		if (!audioContext) {
+			audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+		}
+
+		showModal = true;
+	}
 </script>
 
-<div class="container h-full mx-auto flex justify-center items-center">
+<div class="container h-full mx-auto flex justify-center items-center p-6">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Welcome to The Meditation Game!</h2>
 		<p>Learn how to meditate through gameplay</p>
 		<div class="flex justify-center space-x-2">
-			<button class="btn variant-filled" on:click={() => (showModal = true)}>
+			<button class="btn variant-filled" on:click={startMeditation}>
 				Start meditation
 			</button>
 		</div>
@@ -30,7 +39,7 @@
 	</div>
 </div>
 
-<Modal bind:show={showModal} />
+<Modal bind:show={showModal} {audioContext} />
 <!-- <Modal title={modalTitle} message={modalMessage} bind:show={showModal} /> -->
 
 <style lang="postcss">

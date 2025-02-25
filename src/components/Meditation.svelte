@@ -8,6 +8,7 @@
 
 	export let nextStep: () => void;
 	export let duration: number;
+	export let audioContext: AudioContext | null;
 	const dispatch = createEventDispatcher<{ complete: MeditationResults }>();
 
 	const timeLeft = writable<number>(duration);
@@ -51,7 +52,8 @@
 
 	// Function to generate a short beep sound
 	const playBeep = () => {
-		const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+		if (!audioContext) return;
+		
 		const oscillator = audioContext.createOscillator();
 		const gainNode = audioContext.createGain();
 

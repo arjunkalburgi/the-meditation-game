@@ -9,6 +9,7 @@
 
 	// export let title;
 	// export let message;
+	export let audioContext: AudioContext | null;
 	export let show = false;
 	let step: number = 1;
 	let duration: number = 120;
@@ -59,7 +60,7 @@
 				</div>
 			{:else if step === 3}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
-					<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
+					<Meditation {duration} {nextStep} {audioContext} on:complete={(e) => handleMeditationComplete(e)} />
 				</div>
 			{:else}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
