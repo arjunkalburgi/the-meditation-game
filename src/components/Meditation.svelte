@@ -4,10 +4,11 @@
 	import { writable, get } from "svelte/store";
 	import { createEventDispatcher } from "svelte";
 	import CircularTimer from "./subcomponents/CircularTimer.svelte";
+	import type { MeditationResults } from '$lib/types';
 
 	export let nextStep: () => void;
 	export let duration: number;
-	const dispatch = createEventDispatcher<{ complete: { clickTimestamps: number[], durationMeditated: number, completed: boolean } }>();
+	const dispatch = createEventDispatcher<{ complete: MeditationResults }>();
 
 	const timeLeft = writable<number>(duration);
 	const clickCount = writable<number>(0);

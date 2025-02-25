@@ -2,6 +2,7 @@
 	import { derived, type Writable } from "svelte/store";
 	import { onDestroy } from "svelte";
 	import { createEventDispatcher } from "svelte";
+	import { secondsToDisplayTime } from "$lib/utils";
 
 	export let duration: number;
 	export let timeLeft: Writable<number>
@@ -10,11 +11,7 @@
 
 	let timer: NodeJS.Timeout;
 	
-	const formattedTime = derived(timeLeft, ($t) => {
-		const s = $t % 60;
-		return ($t/60 > 1 ? `${Math.floor($t / 60)}:` : '') + `${s < 10 ? "0" : ""}${s}`;
-	});
-
+	const formattedTime = derived(timeLeft, ($t) => secondsToDisplayTime($t));
 	const percentageTimeLeft = derived(timeLeft, ($t) => $t / duration);
 
 	const startTimer = () => {

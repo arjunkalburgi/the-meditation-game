@@ -1,10 +1,10 @@
 <script lang="ts">
-	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
 	import Instructions from "./Instructions.svelte";
 	import Countdown from "./Countdown.svelte";
 	import Meditation from "./Meditation.svelte";
 	import Results from "./Results.svelte";
+	import type { MeditationResults } from '$lib/types';
 	import { getOrCreateUserId } from '$lib/session';
 
 	// export let title;
@@ -12,18 +12,14 @@
 	export let show = false;
 	let step: number = 1;
 	let duration: number = 120;
-	let meditationResults: number[] = [];
+	let meditationResults: MeditationResults;
 
 	const closeModal = () => {
 		show = false;
 		step = 1; // Reset steps when closing
 	};
 
-	const handleMeditationComplete = (event: CustomEvent<{
-		clickTimestamps: number[], 
-		durationMeditated: number, 
-		completed: boolean 
-	}>): void => {
+	const handleMeditationComplete = (event: CustomEvent<MeditationResults>): void => {
 		const { clickTimestamps, durationMeditated, completed } = event.detail;
 		const userId = getOrCreateUserId();
 
@@ -41,6 +37,7 @@
 		existingSessions.push(session);
 		localStorage.setItem("meditation_sessions", JSON.stringify(existingSessions));
 
+		meditationResults = event.detail;
 		nextStep();
 	};
 
@@ -59,7 +56,7 @@
 			{:else if step === 3}
 				<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
 			{:else}
-				<Results {duration} {closeModal} {meditationResults} />
+				<Results {closeModal} {meditationResults} />
 			{/if}
 		</div>
 	</div>
