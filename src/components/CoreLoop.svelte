@@ -4,6 +4,7 @@
 	import Countdown from "./Countdown.svelte";
 	import Meditation from "./Meditation.svelte";
 	import Results from "./Results.svelte";
+	import { getOrCreateUserId } from '$lib/session';
 
 	// export let title;
 	// export let message;
@@ -17,8 +18,29 @@
 		step = 1; // Reset steps when closing
 	};
 
-	const handleMeditationComplete = (results: CustomEvent<number[]>): void => {
-		meditationResults = results.detail;
+	const handleMeditationComplete = (event: CustomEvent<{
+		clickTimestamps: number[], 
+		durationMeditated: number, 
+		completed: boolean 
+	}>): void => {
+		const { clickTimestamps, durationMeditated, completed } = event.detail;
+		const userId = getOrCreateUserId();
+
+		const session = {
+			user_id: userId,
+			created_at: new Date(new Date().getTime() - durationMeditated * 1000).toISOString(),
+			level: 1,
+			duration_meditated: durationMeditated,
+			duration_planned: duration,
+			total_clicks: clickTimestamps.length,
+			click_timestamps: clickTimestamps,
+			completed
+		};
+
+		const existingSessions = JSON.parse(localStorage.getItem("meditation_sessions") || "[]");
+		existingSessions.push(session);
+		localStorage.setItem("meditation_sessions", JSON.stringify(existingSessions));
+
 		nextStep();
 	};
 

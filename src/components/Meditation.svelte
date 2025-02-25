@@ -6,7 +6,7 @@
 
 	export let nextStep: () => void;
 	export let duration: number;
-	const dispatch = createEventDispatcher<{ complete: number[] }>();
+	const dispatch = createEventDispatcher<{ complete: { clickTimestamps: number[], durationMeditated: number, completed: boolean } }>();
 
 	const timeLeft = writable<number>(duration);
 	const clickCount = writable<number>(0);
@@ -20,13 +20,21 @@
 	};
 
 	const handleExit = () => {
-		dispatch("complete", get(clickTimestamps));
+		dispatch("complete", {
+			clickTimestamps: get(clickTimestamps), 
+			durationMeditated: duration - get(timeLeft), 
+			completed: get(timeLeft) < 5
+		});
 		nextStep();
 	};
 
 	const handleTimerComplete = () => {
 		console.log("Meditation complete! Click data:", get(clickTimestamps));
-		dispatch("complete", get(clickTimestamps));
+		dispatch("complete", {
+			clickTimestamps: get(clickTimestamps), 
+			durationMeditated: duration, 
+			completed: true
+		});
 		nextStep();
 	};
 </script>
