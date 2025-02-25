@@ -1,32 +1,46 @@
 <script lang="ts">
 	import { derived, type Writable } from "svelte/store";
-	import { onDestroy } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 	import { createEventDispatcher } from "svelte";
 	import { secondsToDisplayTime } from "$lib/utils";
 
 	export let duration: number;
 	export let timeLeft: Writable<number>
-
 	const dispatch = createEventDispatcher<{ complete: void }>();
 
+	let wakeLock: WakeLockSentinel | null = null;
 	let timer: NodeJS.Timeout;
 	
 	const formattedTime = derived(timeLeft, ($t) => secondsToDisplayTime($t));
 	const percentageTimeLeft = derived(timeLeft, ($t) => $t / duration);
 
-	const startTimer = () => {
-		timer = setInterval(() => {
-			timeLeft.update((t) => {
-				if (t > 0) return t - 1;
-				clearInterval(timer);
-				dispatch("complete");
-				return 0;
-			});
-		}, 1000);
-	};
-	startTimer();
+	const handleWakeLock = async (activate: boolean) => {
+		try {
+			if (!("wakeLock" in navigator)) return;
+			if (activate) {
+				wakeLock = await navigator.wakeLock.request("screen");
+			} else if (wakeLock) {
+				await wakeLock.release();
+				wakeLock = null;
+			}
+		} catch (err) {
+			console.error(`Wake Lock ${activate ? "request" : "release"} failed:`, err);
+		}
+	}
 
-	onDestroy(() => clearInterval(timer));
+	onMount(() => {
+		timer = setInterval(() => {
+			timeLeft.update((t) => (t > 0 ? t - 1 : (clearInterval(timer), dispatch("complete"), 0)));
+		}, 1000);
+
+		// Request wake lock to prevent device from sleeping during countdown
+		handleWakeLock(true);
+	})
+
+	onDestroy(() => {
+		clearInterval(timer)
+		handleWakeLock(false);
+	});
 </script>
 
 <svg class="w-32 h-32" viewBox="0 0 100 100">
