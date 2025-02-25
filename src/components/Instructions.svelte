@@ -9,8 +9,8 @@
 	// The instructions to animate
 	const instructions = [
 		"1. To practice focus, a short sound will play every 10s",
-		"2. When you hear the sound, **tap anywhere on the screen** if you’ve lost focus",
-		"3. Press **exit meditation** at any time to end early",
+		"2. If you've lost focus when you hear the sound, <b>tap anywhere on the screen</b>",
+		"3. Press <b>Exit meditation</b> at any time to end early",
 		"4. Have fun"
 	];
 
@@ -49,7 +49,7 @@
 
 	<!-- Animated Instructions -->
 	{#each instructions.slice(0, currentStep) as instruction}
-		<p class="text-lg max-w-sm" transition:fade>{ instruction }</p>
+		<p class="text-lg max-w-sm" transition:fade>{@html instruction }</p>
 	{/each}
 
 	{#if currentStep >= 5}
