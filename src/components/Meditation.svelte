@@ -1,4 +1,5 @@
 <script lang="ts">
+	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
 	import { writable, get } from "svelte/store";
 	import { createEventDispatcher } from "svelte";
@@ -17,9 +18,11 @@
 		clickCount.update((c) => c + 1);
 		clickTimestamps.update((arr) => [...arr, timestamp]);
 		console.log(`Click ${get(clickCount)} recorded at ${timestamp} seconds`);
+		posthog.capture("game_tap", { timestamp, total_taps: get(clickCount), level: 0, button: "distracted" });
 	};
 
 	const handleExit = () => {
+		posthog.capture("meditation_exit", { duration_meditated: duration - get(timeLeft), total_taps: get(clickTimestamps).length, level: 0 });
 		dispatch("complete", {
 			clickTimestamps: get(clickTimestamps), 
 			durationMeditated: duration - get(timeLeft), 
@@ -30,6 +33,7 @@
 
 	const handleTimerComplete = () => {
 		console.log("Meditation complete! Click data:", get(clickTimestamps));
+		posthog.capture("meditation_completed", { duration, total_taps: get(clickTimestamps).length, level: 0 });
 		dispatch("complete", {
 			clickTimestamps: get(clickTimestamps), 
 			durationMeditated: duration, 

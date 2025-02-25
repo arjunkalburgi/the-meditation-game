@@ -1,6 +1,7 @@
 <script lang="ts">
+	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
-	import { writable } from "svelte/store"; 
+	import { writable, get } from "svelte/store"; 
 	import CircularTimer from "./subcomponents/CircularTimer.svelte";
 
 	export let nextStep: () => void;
@@ -9,8 +10,16 @@
 	const duration: number = 10;
 	const timeLeft = writable<number>(duration);
 
+	posthog.capture("countdown_started", { level: 0 });
+
 	const handleTimerComplete = () => {
+		posthog.capture("countdown_complete", { level: 0 });
 		nextStep();
+	};
+
+	const handleExit = () => {
+		posthog.capture("countdown_exit", { duration_counteddown: duration - get(timeLeft), level: 0 });
+		closeModal();
 	};
 </script>
 
@@ -21,7 +30,7 @@
 
 	<button 
 		class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-outlined px-4 py-2 pointer-events-auto"
-		on:click={closeModal} 
+		on:click={handleExit} 
 		transition:fade
 	>
 		Exit Meditation

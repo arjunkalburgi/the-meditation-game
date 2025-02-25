@@ -1,4 +1,5 @@
 <script lang="ts">
+	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
 	import Instructions from "./Instructions.svelte";
 	import Countdown from "./Countdown.svelte";
@@ -29,14 +30,13 @@
 		const session = {
 			user_id: userId,
 			created_at: new Date(new Date().getTime() - durationMeditated * 1000).toISOString(),
-			level: 1,
+			level: 0,
 			duration_meditated: durationMeditated,
 			duration_planned: duration,
 			total_clicks: clickTimestamps.length,
 			click_timestamps: clickTimestamps,
 			completed
 		};
-
 		const existingSessions = JSON.parse(localStorage.getItem("meditation_sessions") || "[]");
 		existingSessions.push(session);
 		localStorage.setItem("meditation_sessions", JSON.stringify(existingSessions));

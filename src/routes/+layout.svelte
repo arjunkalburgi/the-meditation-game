@@ -15,10 +15,11 @@
 	onMount(() => {
 		const userId = getOrCreateUserId();
 		posthog.identify(userId);
-		
-		posthog.capture('$pageview', { path: window.location.pathname });
+		posthog.capture('$pageview', { 
+			path: window.location.pathname, 
+			utm_source: new URLSearchParams(window.location.search).get('utm_source')
+		});
 	});
-
 </script>
 
 <!-- App Shell -->

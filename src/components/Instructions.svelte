@@ -1,4 +1,5 @@
 <script>
+	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
 	import { onMount } from "svelte";
 
@@ -16,6 +17,7 @@
 	let currentStep = 0;
 
 	onMount(() => {
+		posthog.capture("instructions_viewed");
 		const interval = setInterval(() => {
 			// +1 for start button
 			if (currentStep < instructions.length + 1) {
@@ -25,6 +27,12 @@
 			}
 		}, 1000);
 	});
+
+	const handleExit = () => {
+		posthog.capture("instructions_exit", { instructions_viewed: currentStep, level: 0 });
+		closeModal();
+	};
+
 </script>
 
 <div class="w-full h-full flex flex-col justify-center items-center px-6 space-y-6 text-center relative">
@@ -32,7 +40,7 @@
 	{#if currentStep >= 3}
 		<button 
 			class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-filled px-4 py-2"
-			on:click={closeModal} 
+			on:click={handleExit} 
 			transition:fade
 		>
 			Exit Meditation

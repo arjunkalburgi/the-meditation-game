@@ -1,4 +1,5 @@
 <script lang="ts">
+	import posthog from '$lib/posthog';
 	import { writable, derived } from "svelte/store"; 
 	export let closeModal;
 	export let duration: number;
@@ -19,6 +20,7 @@
 
 	const shareResults = () => {
 		if (navigator.share) {
+			posthog.capture("results_shared", { total_taps: meditationResults.length, distraction_percentage: $percentage, level: 0 });
 			navigator.share({
 				text: `The Meditation Game App\nI just finished a 2-minute meditation with only ${meditationResults.length} distractions.\n${$progressBar} ${$percentage}% distracted\nMeditate here: https://www.arjunkalburgi.com/the-meditation-game/?utm_source=share`,
 			}).catch((error) => console.error("Sharing failed", error));
@@ -26,6 +28,11 @@
 			console.log("Web Share API not supported");
 		}
 	};
+
+	const handleExit = () => {
+        posthog.capture("results_exit", { shared: navigator.share !== undefined });
+        closeModal();
+    };
 </script>
 
 <div class="w-full h-full flex flex-col justify-center items-center">
@@ -45,7 +52,7 @@
 	</div>
 
 	<div class="mt-6 flex space-x-4">
-		<button class="btn variant-outlined px-4 py-2" on:click={closeModal}>
+		<button class="btn variant-outlined px-4 py-2" on:click={handleExit}>
 			Exit
 		</button>
 	</div>
