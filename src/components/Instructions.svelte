@@ -8,8 +8,8 @@
 
 	// The instructions to animate
 	const instructions = [
-		"1. To practice focus, a short sound will play every 10s",
-		"2. If you've lost focus when you hear the sound, <b>tap anywhere on the screen</b>",
+		"1. Focus on your breath moving through your nose for 2 minutes",
+		"2. <b>Tap anywhere on the screen</b> when you lose focus, a short reminder sound plays every 10s",
 		"3. Press <b>Exit meditation</b> at any time to end early",
 		"4. Have fun"
 	];

@@ -25,6 +25,7 @@
 
 <div class="w-full h-full flex flex-col items-center justify-center relative pointer-events-none">
 	<div class="absolute flex flex-col items-center pointer-events-auto">
+		<p class="text-lg mt-4 text-center">Your meditation starts in:</p>
 		<CircularTimer duration={duration} timeLeft={timeLeft} on:complete={handleTimerComplete} />
 	</div>
 
