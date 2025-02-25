@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade } from "svelte/transition";
 	import Instructions from "./Instructions.svelte";
+	import Countdown from "./Countdown.svelte";
 	import Meditation from "./Meditation.svelte";
 	import Results from "./Results.svelte";
 
@@ -21,9 +22,7 @@
 		nextStep();
 	};
 
-	const nextStep = () => {
-		if (step < 3) step += 1;
-	};
+	const nextStep = () => step++;
 </script>
 
 {#if show}
@@ -34,6 +33,8 @@
 			{#if step === 1}
 				<Instructions {nextStep} {closeModal} />
 			{:else if step === 2}
+				<Countdown {nextStep} {closeModal} />
+			{:else if step === 3}
 				<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
 			{:else}
 				<Results {duration} {closeModal} {meditationResults} />
