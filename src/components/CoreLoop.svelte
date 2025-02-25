@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from "svelte/transition";
+	import { fade, fly } from "svelte/transition";
 	import Instructions from "./Instructions.svelte";
 	import Countdown from "./Countdown.svelte";
 	import Meditation from "./Meditation.svelte";
@@ -41,7 +41,7 @@
 		nextStep();
 	};
 
-	const nextStep = () => step++;
+	const nextStep = () => setTimeout(() => step++, 300);
 </script>
 
 {#if show}
@@ -50,13 +50,21 @@
 			<!-- <h2 class="text-lg font-semibold">{title}</h2>
 			<p class="mt-2">{message}</p> -->
 			{#if step === 1}
-				<Instructions {nextStep} {closeModal} />
+				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
+					<Instructions {nextStep} {closeModal} />
+				</div>
 			{:else if step === 2}
-				<Countdown {nextStep} {closeModal} />
+				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
+					<Countdown {nextStep} {closeModal} />
+				</div>
 			{:else if step === 3}
-				<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
+				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
+					<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
+				</div>
 			{:else}
-				<Results {closeModal} {meditationResults} />
+				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
+					<Results {closeModal} {meditationResults} />
+				</div>
 			{/if}
 		</div>
 	</div>
