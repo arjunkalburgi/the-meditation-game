@@ -1,7 +1,7 @@
 <script lang="ts">
 	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
-	import { writable, get } from "svelte/store";
+	import { writable, derived, get } from "svelte/store";
 	import { createEventDispatcher } from "svelte";
 	import CircularTimer from "./subcomponents/CircularTimer.svelte";
 	import type { MeditationResults } from '$lib/types';
@@ -48,6 +48,31 @@
 		});
 		nextStep();
 	};
+
+	// Function to generate a short beep sound
+	const playBeep = () => {
+		const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+		const oscillator = audioContext.createOscillator();
+		const gainNode = audioContext.createGain();
+
+		oscillator.type = "sine"; // Creates a classic beep sound
+		oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // Set frequency (Hz)
+		gainNode.gain.setValueAtTime(0.2, audioContext.currentTime); // Volume
+
+		oscillator.connect(gainNode);
+		gainNode.connect(audioContext.destination);
+
+		oscillator.start();
+		setTimeout(() => {
+			oscillator.stop();
+		}, 100); // 100ms beep duration
+	};
+
+	// Play a beep sound every 10 seconds
+	const bleepWatcher = derived(timeLeft, ($timeLeft) => {
+		if ($timeLeft < duration && $timeLeft % 10 === 0) playBeep();
+	});
+	$bleepWatcher;
 </script>
 
 <div class="w-full h-full flex flex-col items-center justify-center relative pointer-events-none">
