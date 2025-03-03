@@ -1,14 +1,13 @@
 <script lang="ts">
 	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
-	import { writable, get } from "svelte/store"; 
 	import CircularTimer from "./subcomponents/CircularTimer.svelte";
 
 	export let nextStep: () => void;
 	export let closeModal: () => void;
 
 	const duration: number = 5;
-	const timeLeft = writable<number>(duration);
+	let startTimestamp: number = 0; // milliseconds
 
 	posthog.capture("countdown_started", { level: 0 });
 
@@ -18,7 +17,7 @@
 	};
 
 	const handleExit = () => {
-		posthog.capture("countdown_exit", { duration_counteddown: duration - get(timeLeft), level: 0 });
+		posthog.capture("countdown_exit", { duration_counteddown: ((Date.now() - startTimestamp) / 1000), level: 0 });
 		closeModal();
 	};
 </script>
@@ -26,7 +25,7 @@
 <div class="w-full h-full flex flex-col items-center justify-center relative pointer-events-none">
 	<div class="absolute flex flex-col items-center pointer-events-auto">
 		<p class="text-lg mt-4 text-center">Your meditation starts in:</p>
-		<CircularTimer duration={duration} timeLeft={timeLeft} on:complete={handleTimerComplete} />
+		<CircularTimer {duration} bind:startTimestamp on:complete={handleTimerComplete} />
 	</div>
 
 	<button 

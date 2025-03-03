@@ -1,23 +1,22 @@
 <script lang="ts">
 	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
-	import { writable, derived, get } from "svelte/store";
+	import { writable, get } from "svelte/store";
 	import { createEventDispatcher } from "svelte";
 	import CircularTimer from "./subcomponents/CircularTimer.svelte";
 	import type { MeditationResults } from '$lib/types';
 
 	export let nextStep: () => void;
 	export let duration: number;
-	export let audioContext: AudioContext | null;
 	const dispatch = createEventDispatcher<{ complete: MeditationResults }>();
-
-	const timeLeft = writable<number>(duration);
+	
+	let startTimestamp: number = 0; // milliseconds
 	const clickCount = writable<number>(0);
 	const clickTimestamps = writable<number[]>([]);
 	const ripple = writable<{ x: number, y: number } | null>(null);
 
 	const handleClick = (event: MouseEvent) => {
-		const timestamp = duration - get(timeLeft);
+		const timestamp = (Date.now() - startTimestamp) / 1000; // seconds
 		clickCount.update((c) => c + 1);
 		clickTimestamps.update((arr) => [...arr, timestamp]);
 		console.log(`Click ${get(clickCount)} recorded at ${timestamp} seconds`);
@@ -30,11 +29,12 @@
 	};
 
 	const handleExit = () => {
-		posthog.capture("meditation_exit", { duration_meditated: duration - get(timeLeft), total_taps: get(clickTimestamps).length, level: 0 });
+		const durationMeditated = (Date.now() - startTimestamp) / 1000; // seconds
+		posthog.capture("meditation_exit", { duration_meditated: durationMeditated, total_taps: get(clickTimestamps).length, level: 0 });
 		dispatch("complete", {
 			clickTimestamps: get(clickTimestamps), 
-			durationMeditated: duration - get(timeLeft), 
-			completed: get(timeLeft) < 5
+			durationMeditated, 
+			completed: (duration - durationMeditated) < 5
 		});
 		nextStep();
 	};
@@ -49,37 +49,11 @@
 		});
 		nextStep();
 	};
-
-	// Function to generate a short beep sound
-	const playBeep = () => {
-		if (!audioContext) return;
-		
-		const oscillator = audioContext.createOscillator();
-		const gainNode = audioContext.createGain();
-
-		oscillator.type = "sine"; // Creates a classic beep sound
-		oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // Set frequency (Hz)
-		gainNode.gain.setValueAtTime(0.2, audioContext.currentTime); // Volume
-
-		oscillator.connect(gainNode);
-		gainNode.connect(audioContext.destination);
-
-		oscillator.start();
-		setTimeout(() => {
-			oscillator.stop();
-		}, 100); // 100ms beep duration
-	};
-
-	// Play a beep sound every 10 seconds
-	const bleepWatcher = derived(timeLeft, ($timeLeft) => {
-		if ($timeLeft < duration && $timeLeft % 10 === 0) playBeep();
-	});
-	$bleepWatcher;
 </script>
 
 <div class="w-full h-full flex flex-col items-center justify-center relative pointer-events-none">
 	<div class="absolute flex flex-col items-center pointer-events-auto p-6">
-		<CircularTimer {duration} {timeLeft} on:complete={handleTimerComplete} />
+		<CircularTimer {duration} bind:startTimestamp on:complete={handleTimerComplete} />
 		<p class="text-lg mt-4 text-center">Tap anywhere on the screen to record your distractions</p>
 		{#if $clickCount > 1}
 			<p class="text-lg mt-4 text-center">{$clickCount} distractions</p>

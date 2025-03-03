@@ -8,10 +8,10 @@
 
 	// The instructions to animate
 	const instructions = [
-		"1. Focus on your breath moving through your nose for 2 minutes",
-		"2. <b>Tap anywhere on the screen</b> when you lose focus, a short reminder sound plays every 10s",
-		"3. Press <b>Exit meditation</b> at any time to end early",
-		"4. Have fun"
+		"1. Feel the air move through your nose as you breathe",
+		"2. <b>Tap anywhere on the screen</b> when you lose focus",
+		"3. <b>Exit meditation</b> to end early",
+		"4. Relax and have fun"
 	];
 
 	let currentStep = 0;

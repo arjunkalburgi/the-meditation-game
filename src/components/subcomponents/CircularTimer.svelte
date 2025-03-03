@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { derived, type Writable } from "svelte/store";
+	import { derived, writable } from "svelte/store";
 	import { onMount, onDestroy } from "svelte";
 	import { createEventDispatcher } from "svelte";
 	import { secondsToDisplayTime } from "$lib/utils";
 
 	export let duration: number;
-	export let timeLeft: Writable<number>
+	export let startTimestamp: number;
 	const dispatch = createEventDispatcher<{ complete: void }>();
-
+	
+	let timeLeft = writable<number>(duration);
 	let wakeLock: WakeLockSentinel | null = null;
 	let timer: NodeJS.Timeout;
 	
@@ -38,6 +39,7 @@
 	}
 
 	onMount(() => {
+		startTimestamp = Date.now();
 		timer = setInterval(() => {
 			timeLeft.update((t) => (t > 0 ? t - 1 : (onTimerComplete(), 0)));
 		}, 1000);

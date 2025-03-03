@@ -4,11 +4,10 @@
 	let showModal: boolean = false;
 	let modalTitle: String = "Start Meditation";
 	let modalMessage: String = "Are you ready to begin your meditation session?";
-	let audioContext: AudioContext | null = null;
 
 	const startMeditation = () => {
-		if (!audioContext) {
-			audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+		if (!window.audioContext) {
+			window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 		}
 
 		showModal = true;
@@ -39,7 +38,7 @@
 	</div>
 </div>
 
-<Modal bind:show={showModal} {audioContext} />
+<Modal bind:show={showModal} />
 <!-- <Modal title={modalTitle} message={modalMessage} bind:show={showModal} /> -->
 
 <style lang="postcss">

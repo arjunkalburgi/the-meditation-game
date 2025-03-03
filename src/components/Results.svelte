@@ -2,30 +2,18 @@
 	import posthog from '$lib/posthog';
 	import type { MeditationResults } from '$lib/types';
 	import { secondsToDisplayTime } from '$lib/utils';
-	import { writable, derived, get } from "svelte/store"; 
 
 	export let closeModal;
 	export let meditationResults: MeditationResults;
 
-	const mediResults = writable(meditationResults);
-	const percentage = derived(mediResults, ($res) => {
-		if (!$res.clickTimestamps) return 0;
-		const secondsWithAClick = new Set($res.clickTimestamps.map((t) => Math.floor(t))).size;
-		const calculatedPercentage = Math.round((secondsWithAClick / $res.durationMeditated) * 100);
-		return Math.min(100, Math.max(0, calculatedPercentage));
-	});
-	const progressBar = derived(percentage, ($percentage) => {
-		const barLength = 20;
-		const filled = Math.round(($percentage / 100) * barLength);
-		const empty = barLength - filled;
-		return "▓".repeat(filled) + "░".repeat(empty);
-	});
+	const totalDistractions = meditationResults.clickTimestamps.length;
+	const distractionRate = meditationResults.durationMeditated / meditationResults.clickTimestamps.length;
 
 	const shareResults = () => {
 		if (navigator.share) {
-			posthog.capture("results_shared", {total_taps: meditationResults.clickTimestamps.length, distraction_percentage: get(percentage), level: 0 });
+			posthog.capture("results_shared", { total_taps: totalDistractions, distractionRate, level: 0 });
 			navigator.share({
-				text: `The Meditation Game App\nI just finished a ${meditationResults.durationMeditated / 60}-minute meditation with ${meditationResults.clickTimestamps.length} distractions.\n${get(progressBar)} ${get(percentage)}% distracted\nMeditate here: https://www.arjunkalburgi.com/the-meditation-game/?utm_source=share`,
+				text: `The Meditation Game App\nI just finished a ${meditationResults.durationMeditated / 60}-minute meditation with ${totalDistractions} distractions.\nThat’s about ${distractionRate} per minute.\nMeditate here: https://www.arjunkalburgi.com/the-meditation-game/?utm_source=share`,
 			}).catch((error) => console.error("Sharing failed", error));
 		} else {
 			console.log("Web Share API not supported");
@@ -43,9 +31,11 @@
 
 	{#if meditationResults.clickTimestamps.length > 0}
 		<p class="text-lg mt-4">
-			You meditated for {secondsToDisplayTime(meditationResults.durationMeditated)} and recorded {meditationResults.clickTimestamps.length} distractions, spending {$percentage}% of your meditation distracted.
+			You meditated for {secondsToDisplayTime(meditationResults.durationMeditated)} and recorded {totalDistractions} distractions.
 		</p>
-		<p class="text-lg font-mono mt-2">{$progressBar}</p>
+		<p class="text-lg mt-2">
+			That’s about {distractionRate} per minute.
+		</p>
 	{:else}
 		<p class="text-lg mt-4">You completed your meditation distraction-free!</p>
 	{/if}
