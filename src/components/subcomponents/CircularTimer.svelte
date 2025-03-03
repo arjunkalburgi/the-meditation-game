@@ -11,8 +11,17 @@
 	let wakeLock: WakeLockSentinel | null = null;
 	let timer: NodeJS.Timeout;
 	
+	const soundFile = "/sounds/gong.mp3";
+	let audio = new Audio(soundFile);
+	
 	const formattedTime = derived(timeLeft, ($t) => secondsToDisplayTime($t));
 	const percentageTimeLeft = derived(timeLeft, ($t) => $t / duration);
+
+	const onTimerComplete = () => {
+		clearInterval(timer);
+		audio.play();
+		dispatch("complete");
+	}
 
 	const handleWakeLock = async (activate: boolean) => {
 		try {
@@ -30,7 +39,7 @@
 
 	onMount(() => {
 		timer = setInterval(() => {
-			timeLeft.update((t) => (t > 0 ? t - 1 : (clearInterval(timer), dispatch("complete"), 0)));
+			timeLeft.update((t) => (t > 0 ? t - 1 : (onTimerComplete(), 0)));
 		}, 1000);
 
 		// Request wake lock to prevent device from sleeping during countdown
@@ -38,7 +47,7 @@
 	})
 
 	onDestroy(() => {
-		clearInterval(timer)
+		clearInterval(timer);
 		handleWakeLock(false);
 	});
 </script>
