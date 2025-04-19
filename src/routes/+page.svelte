@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Modal from "$components/CoreLoop.svelte";
+	import DurationPicker from "$components/subcomponents/DurationPicker.svelte";
+	import { MeditationDuration } from "$lib/types";
 
 	let showModal: boolean = false;
-	let modalTitle: String = "Start Meditation";
-	let modalMessage: String = "Are you ready to begin your meditation session?";
+	let selectedDuration: number = MeditationDuration.ONE_MINUTE;
 
 	const startMeditation = () => {
 		if (!window.audioContext) {
@@ -18,6 +19,7 @@
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Welcome to The Meditation Game!</h2>
 		<p>Learn how to meditate through gameplay</p>
+		<DurationPicker selectedDuration={selectedDuration} onDurationChange={(d) => selectedDuration = d} />
 		<div class="flex justify-center space-x-2">
 			<button class="btn variant-filled" on:click={startMeditation}>
 				Start meditation
@@ -38,8 +40,7 @@
 	</div>
 </div>
 
-<Modal bind:show={showModal} />
-<!-- <Modal title={modalTitle} message={modalMessage} bind:show={showModal} /> -->
+<Modal bind:show={showModal} duration={selectedDuration} />
 
 <style lang="postcss">
 	.container {

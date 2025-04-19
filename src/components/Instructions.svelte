@@ -1,10 +1,13 @@
-<script>
+<script lang="ts">
 	import posthog from '$lib/posthog';
 	import { fade } from "svelte/transition";
 	import { onMount } from "svelte";
+	import { DURATION_LABELS } from '$lib/types';
+	import type { MeditationDuration } from '$lib/types';
 
 	export let nextStep;
 	export let closeModal;
+	export let duration: MeditationDuration;
 
 	// The instructions to animate
 	const instructions = [
@@ -56,5 +59,6 @@
 		<button class="btn variant-filled px-4 py-2 mt-4" on:click={nextStep} transition:fade>
 			Start meditation countdown
 		</button>
+		<i class="text-sm text-gray-500">Meditating for {DURATION_LABELS[duration]}</i>
 	{/if}
 </div>

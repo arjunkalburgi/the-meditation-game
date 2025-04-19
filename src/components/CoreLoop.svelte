@@ -4,14 +4,12 @@
 	import Countdown from "./Countdown.svelte";
 	import Meditation from "./Meditation.svelte";
 	import Results from "./Results.svelte";
-	import type { MeditationResults } from '$lib/types';
+	import { MeditationDuration, type MeditationResults } from '$lib/types';
 	import { getOrCreateUserId } from '$lib/session';
 
-	// export let title;
-	// export let message;
 	export let show = false;
+	export let duration = MeditationDuration.ONE_MINUTE;
 	let step: number = 1;
-	let duration: number = 120;
 	let meditationResults: MeditationResults;
 
 	const closeModal = () => {
@@ -51,7 +49,7 @@
 			<p class="mt-2">{message}</p> -->
 			{#if step === 1}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
-					<Instructions {nextStep} {closeModal} />
+					<Instructions {nextStep} {duration} {closeModal} />
 				</div>
 			{:else if step === 2}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">

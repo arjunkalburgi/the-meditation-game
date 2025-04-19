@@ -6,7 +6,7 @@
 	export let nextStep: () => void;
 	export let closeModal: () => void;
 
-	const duration: number = 5;
+	const duration: number = 10;
 	let startTimestamp: number = 0; // milliseconds
 
 	posthog.capture("countdown_started", { level: 0 });
