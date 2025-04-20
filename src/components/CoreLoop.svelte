@@ -5,10 +5,11 @@
 	import Meditation from "./Meditation.svelte";
 	import Results from "./Results.svelte";
 	import { MeditationDuration, type MeditationResults } from '$lib/types';
-	import { getOrCreateUserId } from '$lib/session';
+	import { db } from '$lib/db';
 
 	export let show = false;
 	export let duration = MeditationDuration.ONE_MINUTE;
+	export let levelId: string | null = null;
 	let step: number = 1;
 	let meditationResults: MeditationResults;
 
@@ -17,23 +18,17 @@
 		step = 1; // Reset steps when closing
 	};
 
-	const handleMeditationComplete = (event: CustomEvent<MeditationResults>): void => {
+	const handleMeditationComplete = async (event: CustomEvent<MeditationResults>): Promise<void> => {
 		const { clickTimestamps, durationMeditated, completed } = event.detail;
-		const userId = getOrCreateUserId();
 
-		const session = {
-			user_id: userId,
-			created_at: new Date(new Date().getTime() - durationMeditated * 1000).toISOString(),
-			level: 0,
-			duration_meditated: durationMeditated,
-			duration_planned: duration,
-			total_clicks: clickTimestamps.length,
-			click_timestamps: clickTimestamps,
+		await db.sessions.add({
+			levelId: levelId || "L1",
+			duration: durationMeditated,
+			tapCount: clickTimestamps.length,
+			tapTimestamps: clickTimestamps,
+			timestamp: Date.now(),
 			completed
-		};
-		const existingSessions = JSON.parse(localStorage.getItem("meditation_sessions") || "[]");
-		existingSessions.push(session);
-		localStorage.setItem("meditation_sessions", JSON.stringify(existingSessions));
+		});
 
 		meditationResults = event.detail;
 		nextStep();
