@@ -1,54 +1,54 @@
 import { db } from '$lib/db';
 import type { FocusLevel } from '$lib/types';
 import { focusLevels } from './levels';
+import { calculateStars, selectBestSession } from '$lib/utils/gamification';
+import { getCompletedTasksForSession } from '$lib/utils/taskEvaluation';
 
-// Helper function to execute a query and return a single result
-async function executeQuery(query: string): Promise<any> {
-    // This is a simplified implementation that maps SQL-like syntax to Dexie
-    // In a real implementation, you would parse the SQL and convert it to Dexie operations
+// Function to check task completion for a specific level
+export async function checkTaskCompletion(levelId: string): Promise<Record<string, boolean>> {
+    const level = focusLevels.find(l => l.id === levelId);
+    if (!level) return {};
     
-    if (query.includes('COUNT(*)') && query.includes('levelId = \'L1\'')) {
-        return await db.sessions.where('levelId').equals('L1').count();
+    const sessions = await db.sessions.where('levelId').equals(levelId).toArray();
+    const taskCompletion: Record<string, boolean> = {};
+    
+    // Check each task based on its ID
+    for (const task of level.completionTasks) {
+        switch (task.id) {
+            case 'complete_2_sessions':
+                taskCompletion[task.id] = sessions.length >= 2;
+                break;
+            case 'complete_3_sessions':
+                taskCompletion[task.id] = sessions.length >= 3;
+                break;
+            case 'improve_tap_count':
+                // This requires comparing tap counts across sessions
+                if (sessions.length >= 3) {
+                    const sortedSessions = [...sessions].sort((a, b) => a.timestamp - b.timestamp);
+                    let improvements = 0;
+                    for (let i = 1; i < sortedSessions.length; i++) {
+                        if (sortedSessions[i].tapCount < sortedSessions[i-1].tapCount) {
+                            improvements++;
+                        }
+                    }
+                    taskCompletion[task.id] = improvements >= 2;
+                } else {
+                    taskCompletion[task.id] = false;
+                }
+                break;
+            case '2_sessions_under_8_taps':
+                const sessionsUnder8Taps = sessions.filter(s => s.tapCount <= 8);
+                taskCompletion[task.id] = sessionsUnder8Taps.length >= 2;
+                break;
+            default:
+                // For per-session tasks, check if any session completed this task
+                taskCompletion[task.id] = sessions.some(session => 
+                    getCompletedTasksForSession(session, level).has(task.id)
+                );
+        }
     }
     
-    if (query.includes('COUNT(*)') && query.includes('levelId = \'L2\'')) {
-        return await db.sessions.where('levelId').equals('L2').count();
-    }
-    
-    if (query.includes('COUNT(*)') && query.includes('levelId = \'L3\'') && query.includes('tapCount <= 3')) {
-        return await db.sessions.where('levelId').equals('L3').filter(s => s.tapCount <= 3).count();
-    }
-    
-    if (query.includes('AVG(tapCount)') && query.includes('levelId = \'L1\'')) {
-        const sessions = await db.sessions.where('levelId').equals('L1').toArray();
-        if (sessions.length === 0) return 0;
-        return sessions.reduce((sum, s) => sum + s.tapCount, 0) / sessions.length;
-    }
-    
-    if (query.includes('AVG(tapCount)') && query.includes('levelId = \'L2\'')) {
-        const sessions = await db.sessions.where('levelId').equals('L2').toArray();
-        if (sessions.length === 0) return 0;
-        return sessions.reduce((sum, s) => sum + s.tapCount, 0) / sessions.length;
-    }
-    
-    return null;
-}
-
-// Function to check if Level 2 is unlocked
-export async function isLevel2Unlocked(): Promise<boolean> {
-    const l1SessionCount = await executeQuery("SELECT COUNT(*) as l1_session_count FROM sessions WHERE levelId = 'L1'");
-    const l2SessionCount = await executeQuery("SELECT COUNT(*) as l2_session_count FROM sessions WHERE levelId = 'L2'");
-    const l1AvgTaps = await executeQuery("SELECT AVG(tapCount) as l1_avg_taps FROM sessions WHERE levelId = 'L1'");
-    const l2AvgTaps = await executeQuery("SELECT AVG(tapCount) as l2_avg_taps FROM sessions WHERE levelId = 'L2'");
-    
-    return l1SessionCount >= 3 && l2SessionCount >= 3 && l2AvgTaps < l1AvgTaps * 0.9;
-}
-
-// Function to check if Level 3 is unlocked
-export async function isLevel3Unlocked(): Promise<boolean> {
-    const successfulL3Count = await executeQuery("SELECT COUNT(*) as successful_l3_count FROM sessions WHERE levelId = 'L3' AND tapCount <= 3");
-    
-    return successfulL3Count >= 2;
+    return taskCompletion;
 }
 
 // Function to get level unlock status and progress
@@ -60,50 +60,126 @@ export async function getLevelStatuses(): Promise<Array<{
         requiredSessions: number;
         improvementNeeded?: number;
     };
+    taskCompletion?: Record<string, boolean>;
+    starRating?: number;
+    bestSession?: { tapCount: number; duration: number } | null;
 }>> {
     // Level 1 is always unlocked
     const l1Sessions = await db.sessions.where('levelId').equals('L1').toArray();
+    const l1TaskCompletion = await checkTaskCompletion('L1');
+    
+    // Calculate star rating using the new gamification utilities
+    const l1CompletedTaskIds = new Set(
+        Object.entries(l1TaskCompletion)
+            .filter(([_, completed]) => completed)
+            .map(([taskId]) => taskId)
+    );
+    
+    // For per-session task completion, we need to determine which tasks were completed in each session
+    // This is a simplified approach - in a real implementation, you would track this per session
+    const l1PerSessionCompleted: Set<string>[] = l1Sessions.map(session => 
+        getCompletedTasksForSession(session, focusLevels[0])
+    );
+    
+    const l1StarRating = calculateStars(
+        focusLevels[0].starRules,
+        l1CompletedTaskIds,
+        l1PerSessionCompleted
+    );
+    
+    // Get the best session for Level 1
+    const l1BestSession = selectBestSession(l1Sessions);
+    
     const l1Status = {
         level: focusLevels[0],
         isUnlocked: true,
         progress: {
             sessionsCompleted: l1Sessions.length,
             requiredSessions: 2
-        }
+        },
+        taskCompletion: l1TaskCompletion,
+        starRating: l1StarRating,
+        bestSession: l1BestSession
     };
     
     // Check Level 2
     const l2Sessions = await db.sessions.where('levelId').equals('L2').toArray();
-    const l1AvgTaps = l1Sessions.length > 0 
-    ? l1Sessions.reduce((sum, s) => sum + s.tapCount, 0) / l1Sessions.length 
-    : 0;
-    const l2AvgTaps = l2Sessions.length > 0 
-    ? l2Sessions.reduce((sum, s) => sum + s.tapCount, 0) / l2Sessions.length 
-    : Infinity;
+    const l2TaskCompletion = await checkTaskCompletion('L2');
     
-    const l2IsUnlocked = await isLevel2Unlocked();
+    // Calculate star rating for Level 2
+    const l2CompletedTaskIds = new Set(
+        Object.entries(l2TaskCompletion)
+            .filter(([_, completed]) => completed)
+            .map(([taskId]) => taskId)
+    );
+    
+    const l2PerSessionCompleted: Set<string>[] = l2Sessions.map(session => 
+        getCompletedTasksForSession(session, focusLevels[1])
+    );
+    
+    const l2StarRating = calculateStars(
+        focusLevels[1].starRules,
+        l2CompletedTaskIds,
+        l2PerSessionCompleted
+    );
+    
+    // Get the best session for Level 2
+    const l2BestSession = selectBestSession(l2Sessions);
+    
+    // Level 2 is unlocked if Level 1 has 2 or more stars
+    const l2IsUnlocked = l1StarRating >= 2;
+    
     const l2Status = {
         level: focusLevels[1],
         isUnlocked: l2IsUnlocked,
         progress: {
             sessionsCompleted: l2Sessions.length,
-            requiredSessions: 3,
-            improvementNeeded: l2Sessions.length >= 3 ? l1AvgTaps * 0.9 - l2AvgTaps : undefined
-        }
+            requiredSessions: 3
+        },
+        taskCompletion: l2TaskCompletion,
+        starRating: l2StarRating,
+        bestSession: l2BestSession
     };
     
     // Check Level 3
     const l3Sessions = await db.sessions.where('levelId').equals('L3').toArray();
     const successfulL3Sessions = l3Sessions.filter(s => s.tapCount <= 3);
     
-    const l3IsUnlocked = await isLevel3Unlocked();
+    const l3TaskCompletion = await checkTaskCompletion('L3');
+    
+    // Calculate star rating for Level 3
+    const l3CompletedTaskIds = new Set(
+        Object.entries(l3TaskCompletion)
+            .filter(([_, completed]) => completed)
+            .map(([taskId]) => taskId)
+    );
+    
+    const l3PerSessionCompleted: Set<string>[] = l3Sessions.map(session => 
+        getCompletedTasksForSession(session, focusLevels[2])
+    );
+    
+    const l3StarRating = calculateStars(
+        focusLevels[2].starRules,
+        l3CompletedTaskIds,
+        l3PerSessionCompleted
+    );
+    
+    // Get the best session for Level 3
+    const l3BestSession = selectBestSession(l3Sessions);
+    
+    // Level 3 is unlocked if Level 2 has 2 or more stars
+    const l3IsUnlocked = l2StarRating >= 2;
+    
     const l3Status = {
         level: focusLevels[2],
         isUnlocked: l3IsUnlocked,
         progress: {
             sessionsCompleted: successfulL3Sessions.length,
             requiredSessions: 2
-        }
+        },
+        taskCompletion: l3TaskCompletion,
+        starRating: l3StarRating,
+        bestSession: l3BestSession
     };
     
     return [l1Status, l2Status, l3Status];

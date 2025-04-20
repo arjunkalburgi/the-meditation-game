@@ -1,3 +1,5 @@
+import type { StarRule } from '$lib/types/gamification';
+
 declare global {
     interface Window {
         audioContext?: AudioContext;
@@ -7,7 +9,14 @@ declare global {
 export interface MeditationResults {
     clickTimestamps: number[], 
     durationMeditated: number, 
-    completed: boolean 
+    completed: boolean,
+    levelId: string,
+    previousStarRating: 0 | 1 | 2 | 3,
+    newStarRating: 0 | 1 | 2 | 3,
+    newlyCompletedTasks: string[],
+    completionTaskResults: Record<string, boolean>,
+    isNewPersonalBest: boolean,
+    personalBest: { tapCount: number; duration: number } | null
 }
 
 export enum MeditationDuration {
@@ -45,7 +54,11 @@ export type FocusLevel = {
     name: string;
     minDuration: MeditationDuration;
     maxDuration: MeditationDuration;
-    unlockCriteria: (sessions: MeditationSession[]) => Promise<boolean>;
     description: string;
     instructions: string[];
+    completionTasks: Array<{
+        id: string;
+        description: string;
+    }>;
+    starRules: StarRule[];
 };  
