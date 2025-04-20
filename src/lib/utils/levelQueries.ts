@@ -1,7 +1,7 @@
 import { db } from '$lib/db';
 import type { FocusLevel, MeditationSession } from '$lib/types';
 import { focusLevels } from './levels';
-import { calculateStars } from '$lib/gamification';
+import { calculateStars, selectBestSession } from '$lib/gamification';
 
 // Helper function to execute a query and return a single result
 async function executeQuery(query: string): Promise<any> {
@@ -140,6 +140,7 @@ export async function getLevelStatuses(): Promise<Array<{
     };
     taskCompletion?: Record<string, boolean>;
     starRating?: number;
+    bestSession?: { tapCount: number; duration: number } | null;
 }>> {
     // Level 1 is always unlocked
     const l1Sessions = await db.sessions.where('levelId').equals('L1').toArray();
@@ -171,6 +172,9 @@ export async function getLevelStatuses(): Promise<Array<{
         l1PerSessionCompleted
     );
     
+    // Get the best session for Level 1
+    const l1BestSession = selectBestSession(l1Sessions);
+    
     const l1Status = {
         level: focusLevels[0],
         isUnlocked: true,
@@ -179,7 +183,8 @@ export async function getLevelStatuses(): Promise<Array<{
             requiredSessions: 2
         },
         taskCompletion: l1TaskCompletion,
-        starRating: l1StarRating
+        starRating: l1StarRating,
+        bestSession: l1BestSession
     };
     
     // Check Level 2
@@ -217,6 +222,9 @@ export async function getLevelStatuses(): Promise<Array<{
         l2PerSessionCompleted
     );
     
+    // Get the best session for Level 2
+    const l2BestSession = selectBestSession(l2Sessions);
+    
     const l2Status = {
         level: focusLevels[1],
         isUnlocked: l2IsUnlocked,
@@ -226,7 +234,8 @@ export async function getLevelStatuses(): Promise<Array<{
             improvementNeeded: l2Sessions.length >= 3 ? l1AvgTaps * 0.9 - l2AvgTaps : undefined
         },
         taskCompletion: l2TaskCompletion,
-        starRating: l2StarRating
+        starRating: l2StarRating,
+        bestSession: l2BestSession
     };
     
     // Check Level 3
@@ -281,6 +290,9 @@ export async function getLevelStatuses(): Promise<Array<{
         l3PerSessionCompleted
     );
     
+    // Get the best session for Level 3
+    const l3BestSession = selectBestSession(l3Sessions);
+    
     const l3Status = {
         level: focusLevels[2],
         isUnlocked: l3IsUnlocked,
@@ -289,7 +301,8 @@ export async function getLevelStatuses(): Promise<Array<{
             requiredSessions: 2
         },
         taskCompletion: l3TaskCompletion,
-        starRating: l3StarRating
+        starRating: l3StarRating,
+        bestSession: l3BestSession
     };
     
     return [l1Status, l2Status, l3Status];

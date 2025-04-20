@@ -1,4 +1,26 @@
 import type { StarRule, Requirement } from './types/gamification';
+import type { MeditationSession } from './types';
+
+/**
+* SQL equivalent for future Supabase migration:
+* 
+* SELECT tapCount, duration
+* FROM meditationSessions
+* WHERE levelId = :levelId AND completed = true
+* ORDER BY tapCount ASC, duration DESC, timestamp DESC
+* LIMIT 1;
+*/
+export function selectBestSession(sessions: MeditationSession[]): { tapCount: number; duration: number } | null {
+    return sessions
+    .filter(s => s.completed)
+    .sort((a, b) =>
+        a.tapCount !== b.tapCount
+    ? a.tapCount - b.tapCount
+    : b.duration !== a.duration
+    ? b.duration - a.duration
+    : b.timestamp - a.timestamp
+)[0] ?? null;
+}
 
 /**
 * Evaluates a single star rule against completed tasks

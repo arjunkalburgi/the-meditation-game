@@ -3,6 +3,7 @@
 	import DurationPicker from "$components/subcomponents/DurationPicker.svelte";
 	import { MeditationDuration } from "$lib/types";
 	import { getLevelStatuses } from "$lib/utils/levelQueries";
+	import { sToMin } from "$lib/utils";
 
 	let showModal: boolean = false;
 	let selectedDuration: number = MeditationDuration.ONE_MINUTE;
@@ -16,6 +17,7 @@
 		getLevelStatuses()
 			.then(s => {
 				levelStatuses = s;
+				console.log(s);
 				loading = false;
 			})
 			.catch(error => {
@@ -46,7 +48,7 @@
 	{:else}
 		<div class="flex flex-col gap-6 mt-8">
 			<h2>Section 1: Focus</h2>
-			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating }}
+			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating, bestSession }}
 				<div class="card p-8 {!isUnlocked ? 'opacity-90' : ''}">
 					<div class="flex justify-between items-start mb-8">
 						<div class="space-y-3">
@@ -57,6 +59,11 @@
 								{level.name}
 							</h3>
 							<p class="text-sm text-gray-600">{level.description}</p>
+							{#if bestSession && isUnlocked}
+								<p class="text-sm text-muted-foreground">
+									Best: {bestSession.tapCount} taps · {sToMin(bestSession.duration)} min
+								</p>
+							{/if}
 						</div>
 						{#if starRating !== undefined && isUnlocked}
 							<div class="flex items-center">

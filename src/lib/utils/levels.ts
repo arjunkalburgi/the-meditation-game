@@ -16,10 +16,6 @@ export const focusLevels: FocusLevel[] = [
             "Every tap is a sign of awareness — it means you're learning",
             "You're not here to be perfect. Just to begin."
         ],
-        unlockCriteria: async (sessions) => {
-            const l1Sessions = await db.sessions.where('levelId').equals('L1').toArray();
-            return l1Sessions.length >= 2;
-        },
         completionTasks: [
             { id: 'complete_2_sessions', description: 'Complete 2 sessions' },
             { id: 'tap_once', description: 'Tap to mark at least one distraction' },
@@ -71,17 +67,6 @@ export const focusLevels: FocusLevel[] = [
             "Let the practice be steady, not strict",
             "You're building the habit of coming back."
         ],
-        unlockCriteria: async (sessions) => {
-            const l1Sessions = await db.sessions.where('levelId').equals('L1').toArray();
-            if (l1Sessions.length < 3) return false;
-            
-            const l1Avg = l1Sessions.reduce((sum, s) => sum + s.tapCount, 0) / l1Sessions.length;
-            const l2Sessions = await db.sessions.where('levelId').equals('L2').toArray();
-            if (l2Sessions.length < 3) return false;
-            
-            const l2Avg = l2Sessions.reduce((sum, s) => sum + s.tapCount, 0) / l2Sessions.length;
-            return l2Avg < l1Avg * 0.9;
-        },
         completionTasks: [
             { id: 'complete_3_sessions', description: 'Complete 3 sessions' },
             { id: 'improve_tap_count', description: 'Improve your tap count in 2 of 3 sessions' },
@@ -133,11 +118,6 @@ export const focusLevels: FocusLevel[] = [
             "You're developing continuity — not by force, but by ease",
             "Allow the mind to settle. You're ready for this."
         ],
-        unlockCriteria: async (sessions) => {
-            const l3Sessions = await db.sessions.where('levelId').equals('L3').toArray();
-            const successful = l3Sessions.filter(s => s.tapCount <= 3);
-            return successful.length >= 2;
-        },
         completionTasks: [
             { id: '2_sessions_under_8_taps', description: 'Complete 2 sessions with 8 or fewer taps' },
             { id: 'one_min_no_taps', description: 'Go one full minute without tapping during a session' },
