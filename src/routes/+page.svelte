@@ -3,14 +3,6 @@
 	import DurationPicker from "$components/subcomponents/DurationPicker.svelte";
 	import { MeditationDuration } from "$lib/types";
 	import { getLevelStatuses } from "$lib/utils/levelQueries";
-	import { onMount } from "svelte";
-
-	function getDurationsBetween(min: MeditationDuration, max: MeditationDuration): number[] {
-		const mins = Object.values(MeditationDuration)
-			.map(Number)
-			.sort((a, b) => a - b);
-		return mins.filter(m => m >= min && m <= max);
-	}
 
 	let showModal: boolean = false;
 	let selectedDuration: number = MeditationDuration.ONE_MINUTE;
@@ -18,11 +10,19 @@
 	let levelStatuses: any[] = [];
 	let loading: boolean = true;
 
-	onMount(async () => {
-		// Load level statuses using SQL-like queries
-		levelStatuses = await getLevelStatuses();
-		loading = false;
-	});
+	// Load page
+	$: if (!showModal) {
+		loading = true;
+		getLevelStatuses()
+			.then(s => {
+				levelStatuses = s;
+				loading = false;
+			})
+			.catch(error => {
+				console.error('Failed to reload level statuses:', error);
+				loading = false;
+			});
+	}
 
 	const startMeditation = () => {
 		if (!window.audioContext) {
