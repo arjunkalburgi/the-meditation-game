@@ -11,23 +11,25 @@ export function buildShareText(results: MeditationResults): string {
     
     // Template A - New star earned
     if (starsGained > 0) {
-        return `🧘‍♂️  I just earned a new ⭐ in The Meditation Game!
-First time I kept focus for a full minute without drifting.
-Took only ${minutes} min and my mind feels lighter already.
-Sit with me tomorrow?  ${baseUrl}`;
+        return `Major win! 🧘‍♂️  I just earned a new ⭐ in The Meditation Game!
+I did a ${minutes}‑min meditation with only ${mindWanders} distractions.
+I'm at ${'⭐'.repeat(results.newStarRating)} on this level!
+Learn and practice meditation here: ${baseUrl}`;
     }
     
     // Template B - Personal best achieved
     if (results.isNewPersonalBest) {
         const mindWanderText = mindWanders === 1 ? 'mind-wander' : 'mind-wanders';
         return `Mini‑win in The Meditation Game: my new personal best!
-        ${minutes}‑min sit • only ${mindWanders} ${mindWanderText} • ${results.newStarRating}/3 ⭐ on this level
-Care to beat my score or just breathe with me?  ${baseUrl}`;
+${minutes}‑min sit • only ${mindWanders} ${mindWanderText} • ${'⭐'.repeat(results.newStarRating)} on this level
+Learn and practice meditation here: ${baseUrl}`;
     }
     
     // Template C - Regular session (fallback)
-    return `Another calm ${minutes}‑min sit in The Meditation Game.
-Feeling clearer already. Join me?  ${baseUrl}`;
+    return `Sharing todays practice in The Meditation Game.
+I did a ${minutes}‑min meditation with only ${mindWanders} distractions.
+I'm at ${'⭐'.repeat(results.newStarRating)} on this level.
+Learn and practice meditation here: ${baseUrl}`;
 }
 
 /**

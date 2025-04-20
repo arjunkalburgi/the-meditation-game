@@ -1,7 +1,7 @@
 <script lang="ts">
 	import posthog from '$lib/posthog';
 	import type { MeditationResults } from '$lib/types';
-	import { secondsToDisplayTime } from '$lib/utils';
+	import { sToMin } from '$lib/utils';
 	import { focusLevels } from '$lib/utils/levels';
 	import { buildShareText, getTemplateUsed } from '$lib/utils/share';
 
@@ -102,11 +102,11 @@
 
 	{#if meditationResults.isNewPersonalBest && meditationResults.personalBest}
 		<p class="mt-4 text-green-600 font-medium animate-fade-in">
-			New personal best 🎉 — {meditationResults.personalBest.tapCount} taps over {secondsToDisplayTime(meditationResults.personalBest.duration)}.
+			New personal best 🎉 — {meditationResults.personalBest.tapCount} taps over {sToMin(meditationResults.personalBest.duration)} min.
 		</p>
 	{:else if meditationResults.personalBest}
 		<p class="mt-4 text-muted-foreground">
-			Best so far: {meditationResults.personalBest.tapCount} taps · {secondsToDisplayTime(meditationResults.personalBest.duration)}.
+			Best so far: {meditationResults.personalBest.tapCount} taps · {sToMin(meditationResults.personalBest.duration)} min.
 		</p>
 	{/if}
 
