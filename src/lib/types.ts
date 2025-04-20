@@ -27,3 +27,22 @@ export const DURATION_LABELS: Record<MeditationDuration, string> = {
     [MeditationDuration.THIRTY_MINUTES]: '30 minutes',
     [MeditationDuration.SIXTY_MINUTES]: '60 minutes'
 };
+
+export interface MeditationSession {
+    id?: number;
+    levelId: string;
+    tapCount: number;
+    duration: number;
+    tapTimestamps: number[];
+    timestamp: number;
+    completed: boolean;
+}
+
+export type FocusLevel = {
+    id: string;
+    name: string;
+    minDuration: number;
+    maxDuration: number;
+    unlockCriteria: (sessions: MeditationSession[]) => Promise<boolean>;
+    description: string;
+};  
