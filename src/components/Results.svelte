@@ -41,7 +41,7 @@
 			posthog.capture("results_shared", { 
 				total_taps: totalDistractions, 
 				distractionRate, 
-				level: 0,
+				level: meditationResults.levelId,
 				stars_gained: starsGained,
 				tasks_completed: meditationResults.newlyCompletedTasks.length,
 				template_used: templateUsed,

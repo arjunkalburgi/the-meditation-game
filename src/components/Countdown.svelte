@@ -5,19 +5,20 @@
 
 	export let nextStep: () => void;
 	export let closeModal: () => void;
+	export let levelId: string | null = "L1";
 
 	const duration: number = 10;
 	let startTimestamp: number = 0; // milliseconds
 
-	posthog.capture("countdown_started", { level: 0 });
+	posthog.capture("countdown_started", { level: levelId });
 
 	const handleTimerComplete = () => {
-		posthog.capture("countdown_complete", { level: 0 });
+		posthog.capture("countdown_complete", { level: levelId });
 		nextStep();
 	};
 
 	const handleExit = () => {
-		posthog.capture("countdown_exit", { duration_counteddown: ((Date.now() - startTimestamp) / 1000), level: 0 });
+		posthog.capture("countdown_exit", { duration_counteddown: ((Date.now() - startTimestamp) / 1000), level: levelId });
 		closeModal();
 	};
 </script>

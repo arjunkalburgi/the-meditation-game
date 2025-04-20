@@ -2,6 +2,7 @@ import { db } from '$lib/db';
 import type { FocusLevel } from '$lib/types';
 import { focusLevels } from './levels';
 import { calculateStars, selectBestSession } from '$lib/utils/gamification';
+import { getCompletedTasksForSession } from '$lib/utils/taskEvaluation';
 
 // Function to check task completion for a specific level
 export async function checkTaskCompletion(levelId: string): Promise<Record<string, boolean>> {
@@ -20,15 +21,6 @@ export async function checkTaskCompletion(levelId: string): Promise<Record<strin
             case 'complete_3_sessions':
                 taskCompletion[task.id] = sessions.length >= 3;
                 break;
-            case 'tap_once':
-                taskCompletion[task.id] = sessions.some(s => s.tapCount > 0);
-                break;
-            case 'no_early_exit':
-                taskCompletion[task.id] = sessions.some(s => s.completed);
-                break;
-            case 'max_duration':
-                taskCompletion[task.id] = sessions.some(s => s.duration >= level.maxDuration);
-                break;
             case 'improve_tap_count':
                 // This requires comparing tap counts across sessions
                 if (sessions.length >= 3) {
@@ -44,36 +36,15 @@ export async function checkTaskCompletion(levelId: string): Promise<Record<strin
                     taskCompletion[task.id] = false;
                 }
                 break;
-            case 'session_under_5_taps':
-                taskCompletion[task.id] = sessions.some(s => s.tapCount <= 5);
-                break;
             case '2_sessions_under_8_taps':
                 const sessionsUnder8Taps = sessions.filter(s => s.tapCount <= 8);
                 taskCompletion[task.id] = sessionsUnder8Taps.length >= 2;
                 break;
-            case 'one_min_no_taps':
-                // This requires checking if there's a 60-second period without taps
-                taskCompletion[task.id] = sessions.some(s => {
-                    if (s.tapTimestamps.length === 0) return true;
-                    if (s.tapTimestamps.length === 1) return s.tapTimestamps[0] > 60 || s.duration - s.tapTimestamps[0] > 60;
-                    
-                    // Check gaps between consecutive taps
-                    for (let i = 0; i < s.tapTimestamps.length - 1; i++) {
-                        if (s.tapTimestamps[i+1] - s.tapTimestamps[i] > 60) {
-                            return true;
-                        }
-                    }
-                    
-                    // Check gap at the beginning and end
-                    if (s.tapTimestamps[0] > 60 || s.duration - s.tapTimestamps[s.tapTimestamps.length - 1] > 60) {
-                        return true;
-                    }
-                    
-                    return false;
-                });
-                break;
             default:
-                taskCompletion[task.id] = false;
+                // For per-session tasks, check if any session completed this task
+                taskCompletion[task.id] = sessions.some(session => 
+                    getCompletedTasksForSession(session, level).has(task.id)
+                );
         }
     }
     
@@ -106,16 +77,9 @@ export async function getLevelStatuses(): Promise<Array<{
     
     // For per-session task completion, we need to determine which tasks were completed in each session
     // This is a simplified approach - in a real implementation, you would track this per session
-    const l1PerSessionCompleted: Set<string>[] = l1Sessions.map(session => {
-        const sessionCompletedTasks = new Set<string>();
-        
-        // Add tasks that are completed based on this specific session
-        if (session.tapCount > 0) sessionCompletedTasks.add('tap_once');
-        if (session.completed) sessionCompletedTasks.add('no_early_exit');
-        if (session.duration >= focusLevels[0].maxDuration) sessionCompletedTasks.add('max_duration');
-        
-        return sessionCompletedTasks;
-    });
+    const l1PerSessionCompleted: Set<string>[] = l1Sessions.map(session => 
+        getCompletedTasksForSession(session, focusLevels[0])
+    );
     
     const l1StarRating = calculateStars(
         focusLevels[0].starRules,
@@ -149,15 +113,9 @@ export async function getLevelStatuses(): Promise<Array<{
             .map(([taskId]) => taskId)
     );
     
-    const l2PerSessionCompleted: Set<string>[] = l2Sessions.map(session => {
-        const sessionCompletedTasks = new Set<string>();
-        
-        // Add tasks that are completed based on this specific session
-        if (session.tapCount <= 5) sessionCompletedTasks.add('session_under_5_taps');
-        if (session.duration >= focusLevels[1].maxDuration) sessionCompletedTasks.add('max_duration');
-        
-        return sessionCompletedTasks;
-    });
+    const l2PerSessionCompleted: Set<string>[] = l2Sessions.map(session => 
+        getCompletedTasksForSession(session, focusLevels[1])
+    );
     
     const l2StarRating = calculateStars(
         focusLevels[1].starRules,
@@ -196,37 +154,9 @@ export async function getLevelStatuses(): Promise<Array<{
             .map(([taskId]) => taskId)
     );
     
-    const l3PerSessionCompleted: Set<string>[] = l3Sessions.map(session => {
-        const sessionCompletedTasks = new Set<string>();
-        
-        // Add tasks that are completed based on this specific session
-        if (session.tapCount <= 8) sessionCompletedTasks.add('2_sessions_under_8_taps');
-        if (session.duration >= focusLevels[2].maxDuration) sessionCompletedTasks.add('max_duration');
-        
-        // Check for one_min_no_taps
-        if (session.tapTimestamps.length === 0) {
-            sessionCompletedTasks.add('one_min_no_taps');
-        } else if (session.tapTimestamps.length === 1) {
-            if (session.tapTimestamps[0] > 60 || session.duration - session.tapTimestamps[0] > 60) {
-                sessionCompletedTasks.add('one_min_no_taps');
-            }
-        } else {
-            // Check gaps between consecutive taps
-            for (let i = 0; i < session.tapTimestamps.length - 1; i++) {
-                if (session.tapTimestamps[i+1] - session.tapTimestamps[i] > 60) {
-                    sessionCompletedTasks.add('one_min_no_taps');
-                    break;
-                }
-            }
-            
-            // Check gap at the beginning and end
-            if (session.tapTimestamps[0] > 60 || session.duration - session.tapTimestamps[session.tapTimestamps.length - 1] > 60) {
-                sessionCompletedTasks.add('one_min_no_taps');
-            }
-        }
-        
-        return sessionCompletedTasks;
-    });
+    const l3PerSessionCompleted: Set<string>[] = l3Sessions.map(session => 
+        getCompletedTasksForSession(session, focusLevels[2])
+    );
     
     const l3StarRating = calculateStars(
         focusLevels[2].starRules,

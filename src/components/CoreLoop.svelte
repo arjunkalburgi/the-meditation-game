@@ -9,6 +9,7 @@
 	import { calculateStars, selectBestSession } from '$lib/utils/gamification';
 	import { checkTaskCompletion } from '$lib/utils/levelQueries';
 	import { focusLevels } from '$lib/utils/levels';
+	import { getCompletedTasksForSession } from '$lib/utils/taskEvaluation';
 
 	export let show = false;
 	export let duration = MeditationDuration.ONE_MINUTE;
@@ -39,13 +40,9 @@
 		);
 		
 		// Calculate previous star rating
-		const previousPerSessionCompleted: Set<string>[] = levelSessions.map(session => {
-			const sessionCompletedTasks = new Set<string>();
-			if (session.tapCount > 0) sessionCompletedTasks.add('tap_once');
-			if (session.completed) sessionCompletedTasks.add('no_early_exit');
-			if (session.duration >= level.maxDuration) sessionCompletedTasks.add('max_duration');
-			return sessionCompletedTasks;
-		});
+		const previousPerSessionCompleted: Set<string>[] = levelSessions.map(session => 
+			getCompletedTasksForSession(session, level)
+		);
 		
 		const previousStarRating = calculateStars(
 			level.starRules,
@@ -78,14 +75,10 @@
 			.map(([taskId]) => taskId);
 		
 		// Calculate new star rating with the new session
-		const updatedSessions = [...levelSessions, newSession];
-		const newPerSessionCompleted: Set<string>[] = updatedSessions.map(session => {
-			const sessionCompletedTasks = new Set<string>();
-			if (session.tapCount > 0) sessionCompletedTasks.add('tap_once');
-			if (session.completed) sessionCompletedTasks.add('no_early_exit');
-			if (session.duration >= level.maxDuration) sessionCompletedTasks.add('max_duration');
-			return sessionCompletedTasks;
-		});
+		const updatedSessions = await db.sessions.where('levelId').equals(currentLevelId).toArray();
+		const newPerSessionCompleted: Set<string>[] = updatedSessions.map(session => 
+			getCompletedTasksForSession(session, level)
+		);
 		
 		const newStarRating = calculateStars(
 			level.starRules,
@@ -126,11 +119,11 @@
 				</div>
 			{:else if step === 2}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
-					<Countdown {nextStep} {closeModal} />
+					<Countdown {nextStep} {closeModal} {levelId} />
 				</div>
 			{:else if step === 3}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
-					<Meditation {duration} {nextStep} on:complete={(e) => handleMeditationComplete(e)} />
+					<Meditation {duration} {nextStep} {levelId} on:complete={(e) => handleMeditationComplete(e)} />
 				</div>
 			{:else}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">

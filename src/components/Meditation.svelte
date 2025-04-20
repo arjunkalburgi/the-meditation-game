@@ -8,6 +8,7 @@
 
 	export let nextStep: () => void;
 	export let duration: number;
+	export let levelId: string | null = "L1";
 	const dispatch = createEventDispatcher<{ complete: MeditationResults }>();
 	
 	let startTimestamp: number = 0; // milliseconds
@@ -20,7 +21,7 @@
 		clickCount.update((c) => c + 1);
 		clickTimestamps.update((arr) => [...arr, timestamp]);
 		console.log(`Click ${get(clickCount)} recorded at ${timestamp} seconds`);
-		posthog.capture("game_tap", { timestamp, total_taps: get(clickCount), level: 0, button: "distracted" });
+		posthog.capture("game_tap", { timestamp, total_taps: get(clickCount), level: levelId, button: "distracted" });
 
 		const { clientX, clientY, currentTarget } = event;
 		const rect = (currentTarget as HTMLElement).getBoundingClientRect();
@@ -30,7 +31,7 @@
 
 	const handleExit = () => {
 		const durationMeditated = (Date.now() - startTimestamp) / 1000; // seconds
-		posthog.capture("meditation_exit", { duration_meditated: durationMeditated, total_taps: get(clickTimestamps).length, level: 0 });
+		posthog.capture("meditation_exit", { duration_meditated: durationMeditated, total_taps: get(clickTimestamps).length, level: levelId });
 		dispatch("complete", {
 			clickTimestamps: get(clickTimestamps), 
 			durationMeditated, 
@@ -41,7 +42,7 @@
 
 	const handleTimerComplete = () => {
 		console.log("Meditation complete! Click data:", get(clickTimestamps));
-		posthog.capture("meditation_completed", { duration, total_taps: get(clickTimestamps).length, level: 0 });
+		posthog.capture("meditation_completed", { duration, total_taps: get(clickTimestamps).length, level: levelId });
 		dispatch("complete", {
 			clickTimestamps: get(clickTimestamps), 
 			durationMeditated: duration, 
