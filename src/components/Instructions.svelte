@@ -44,7 +44,7 @@
 
 <div class="w-full h-full flex flex-col justify-center items-center px-6 space-y-6 text-center relative">
 	<!-- Exit Meditation Button at Top Center -->
-	{#if currentStep >= 3}
+	{#if currentStep >= instructions.length}
 		<button 
 			class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-filled px-4 py-2"
 			on:click={handleExit} 

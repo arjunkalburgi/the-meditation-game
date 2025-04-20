@@ -6,7 +6,7 @@ class AppDatabase extends Dexie {
     sessions!: Table<MeditationSession>;
     
     constructor() {
-        super('LilaMeditationDB');
+        super('MeditationGameDB');
         this.version(1).stores({
             sessions: '++id, levelId, timestamp'
         });

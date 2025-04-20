@@ -7,13 +7,28 @@
 	export let meditationResults: MeditationResults;
 
 	const totalDistractions = meditationResults.clickTimestamps.length;
-	const distractionRate = meditationResults.durationMeditated / meditationResults.clickTimestamps.length;
+	const distractionRate = totalDistractions > 0 
+		? (totalDistractions / (meditationResults.durationMeditated / 60)).toFixed(1)
+		: '0';
+
+	const getDurationText = (duration: number) => {
+		const minutes = Math.floor(duration / 60);
+		const seconds = duration % 60;
+		if (minutes === 0) {
+			return seconds + ' second' + (seconds === 1 ? '' : 's');
+		}
+		return minutes + ' minute' + (minutes === 1 ? '' : 's') + (seconds > 0 ? ' and ' + seconds + ' second' + (seconds === 1 ? '' : 's') : '');
+	};
 
 	const shareResults = () => {
 		if (navigator.share) {
 			posthog.capture("results_shared", { total_taps: totalDistractions, distractionRate, level: 0 });
+			const shareText = 'The Meditation Game App\n' +
+				'I just finished a ' + getDurationText(meditationResults.durationMeditated) + ' meditation with ' + totalDistractions + ' distractions.\n' +
+				'That\'s about ' + distractionRate + ' distractions per minute.\n' +
+				'Meditate here: https://www.arjunkalburgi.com/the-meditation-game/?utm_source=share';
 			navigator.share({
-				text: `The Meditation Game App\nI just finished a ${meditationResults.durationMeditated / 60}-minute meditation with ${totalDistractions} distractions.\nThat’s about ${distractionRate} per minute.\nMeditate here: https://www.arjunkalburgi.com/the-meditation-game/?utm_source=share`,
+				text: shareText,
 			}).catch((error) => console.error("Sharing failed", error));
 		} else {
 			console.log("Web Share API not supported");
@@ -31,10 +46,10 @@
 
 	{#if meditationResults.clickTimestamps.length > 0}
 		<p class="text-lg mt-4">
-			You meditated for {secondsToDisplayTime(meditationResults.durationMeditated)} and recorded {totalDistractions} distractions.
+			You meditated for {getDurationText(meditationResults.durationMeditated)} and recorded {totalDistractions} {totalDistractions === 1 ? 'distraction' : 'distractions'}.
 		</p>
 		<p class="text-lg mt-2">
-			That’s about {distractionRate} per minute.
+			That's about {distractionRate} {Number(distractionRate) === 1 ? 'distraction' : 'distractions'} per minute.
 		</p>
 	{:else}
 		<p class="text-lg mt-4">You completed your meditation distraction-free!</p>

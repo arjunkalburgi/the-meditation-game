@@ -44,7 +44,7 @@
 			<div class="loading loading-spinner loading-lg"></div>
 		</div>
 	{:else}
-		<div class="flex flex-col gap-6 mt-8 max-h-[calc(100vh-200px)] overflow-y-auto">
+		<div class="flex flex-col gap-6 mt-8 mb-40">
 			{#each levelStatuses as { level, isUnlocked, progress }}
 				<div class="card p-8 {!isUnlocked ? 'opacity-50' : ''}">
 					<div class="flex justify-between items-start mb-8">
