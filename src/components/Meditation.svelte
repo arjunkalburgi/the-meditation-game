@@ -55,10 +55,10 @@
 	<div class="absolute flex flex-col items-center pointer-events-auto p-6">
 		<CircularTimer {duration} bind:startTimestamp on:complete={handleTimerComplete} />
 		<p class="text-lg mt-4 text-center">Tap anywhere on the screen to record your distractions</p>
-		{#if $clickCount > 1}
-			<p class="text-lg mt-4 text-center">{$clickCount} distractions</p>
+		{#if $clickCount > 1 || $clickCount == 0}
+			<i class="text-sm text-gray-500">{$clickCount} distractions</i>
 		{:else if $clickCount == 1}
-			<p class="text-lg mt-4 text-center">{$clickCount} distraction</p>
+			<i class="text-sm text-gray-500">{$clickCount} distraction</i>
 		{:else} <!-- extra space so that the text doesn't jump -->
 			<br /><br />
 		{/if}
