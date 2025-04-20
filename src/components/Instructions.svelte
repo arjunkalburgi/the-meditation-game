@@ -4,23 +4,27 @@
 	import { onMount } from "svelte";
 	import { DURATION_LABELS } from '$lib/types';
 	import type { MeditationDuration } from '$lib/types';
+	import { focusLevels } from '$lib/utils/levels';
 
 	export let nextStep;
 	export let closeModal;
 	export let duration: MeditationDuration;
+	export let levelId: string | null = "L1";
 
-	// The instructions to animate
-	const instructions = [
+	// Get the level-specific instructions
+	const level = focusLevels.find(l => l.id === levelId);
+	const defaultInstructions = [
 		"1. Feel the air move through your nose as you breathe",
 		"2. <b>Tap anywhere on the screen</b> when you lose focus",
 		"3. <b>Exit meditation</b> to end early",
 		"4. Relax and have fun"
 	];
+	const instructions = level?.instructions || defaultInstructions;
 
 	let currentStep = 0;
 
 	onMount(() => {
-		posthog.capture("instructions_viewed");
+		posthog.capture("instructions_viewed", { level: levelId });
 		const interval = setInterval(() => {
 			// +1 for start button
 			if (currentStep < instructions.length + 1) {
@@ -32,7 +36,7 @@
 	});
 
 	const handleExit = () => {
-		posthog.capture("instructions_exit", { instructions_viewed: currentStep, level: 0 });
+		posthog.capture("instructions_exit", { instructions_viewed: currentStep, level: levelId });
 		closeModal();
 	};
 
@@ -52,10 +56,10 @@
 
 	<!-- Animated Instructions -->
 	{#each instructions.slice(0, currentStep) as instruction}
-		<p class="text-lg max-w-sm" transition:fade>{@html instruction }</p>
+		<p class="text-lg max-w-sm" transition:fade>{@html instruction}</p>
 	{/each}
 
-	{#if currentStep >= 5}
+	{#if currentStep >= instructions.length}
 		<button class="btn variant-filled px-4 py-2 mt-4" on:click={nextStep} transition:fade>
 			Start meditation countdown
 		</button>

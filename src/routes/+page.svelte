@@ -44,11 +44,11 @@
 			<div class="loading loading-spinner loading-lg"></div>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+		<div class="flex flex-col gap-6 mt-8 max-h-[calc(100vh-200px)] overflow-y-auto">
 			{#each levelStatuses as { level, isUnlocked, progress }}
-				<div class="card p-4 {!isUnlocked ? 'opacity-50' : ''}">
-					<div class="flex justify-between items-start mb-4">
-						<div>
+				<div class="card p-8 {!isUnlocked ? 'opacity-50' : ''}">
+					<div class="flex justify-between items-start mb-8">
+						<div class="space-y-3">
 							<h3 class="text-xl font-bold">{level.name}</h3>
 							<p class="text-sm text-gray-600">{level.description}</p>
 						</div>
@@ -58,7 +58,7 @@
 					</div>
 
 					{#if isUnlocked}
-						<div class="space-y-4">
+						<div class="space-y-6">
 							<DurationPicker 
 								selectedDuration={selectedDuration} 
 								onDurationChange={(d) => selectedDuration = d}
@@ -76,7 +76,7 @@
 							</button>
 						</div>
 					{:else}
-						<div class="space-y-2">
+						<div class="space-y-4">
 							<p class="text-sm text-gray-500">
 								{#if progress}
 									{#if progress.improvementNeeded}

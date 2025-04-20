@@ -47,4 +47,5 @@ export type FocusLevel = {
     maxDuration: MeditationDuration;
     unlockCriteria: (sessions: MeditationSession[]) => Promise<boolean>;
     description: string;
+    instructions: string[];
 };  

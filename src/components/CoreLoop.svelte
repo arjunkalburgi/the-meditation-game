@@ -44,7 +44,7 @@
 			<p class="mt-2">{message}</p> -->
 			{#if step === 1}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
-					<Instructions {nextStep} {duration} {closeModal} />
+					<Instructions {nextStep} {duration} {closeModal} {levelId} />
 				</div>
 			{:else if step === 2}
 				<div class="absolute inset-0 flex flex-col" transition:fade="{{ duration: 300 }}">
