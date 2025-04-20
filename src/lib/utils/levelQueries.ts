@@ -1,7 +1,7 @@
 import { db } from '$lib/db';
-import type { FocusLevel, MeditationSession } from '$lib/types';
+import type { FocusLevel } from '$lib/types';
 import { focusLevels } from './levels';
-import { calculateStars, selectBestSession } from '$lib/gamification';
+import { calculateStars, selectBestSession } from '$lib/utils/gamification';
 
 // Function to check task completion for a specific level
 export async function checkTaskCompletion(levelId: string): Promise<Record<string, boolean>> {

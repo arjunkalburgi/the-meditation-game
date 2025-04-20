@@ -1,4 +1,4 @@
-import type { StarRule } from './types/gamification';
+import type { StarRule } from '$lib/types/gamification';
 
 declare global {
     interface Window {

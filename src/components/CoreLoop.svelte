@@ -6,7 +6,7 @@
 	import Results from "./Results.svelte";
 	import { MeditationDuration, type MeditationResults } from '$lib/types';
 	import { db } from '$lib/db';
-	import { calculateStars, selectBestSession } from '$lib/gamification';
+	import { calculateStars, selectBestSession } from '$lib/utils/gamification';
 	import { checkTaskCompletion } from '$lib/utils/levelQueries';
 	import { focusLevels } from '$lib/utils/levels';
 

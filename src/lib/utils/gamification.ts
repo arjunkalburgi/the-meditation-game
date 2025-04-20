@@ -1,5 +1,5 @@
-import type { StarRule, Requirement } from './types/gamification';
-import type { MeditationSession } from './types';
+import type { StarRule, Requirement } from '$lib/types/gamification';
+import type { MeditationSession } from '$lib/types';
 
 /**
 * SQL equivalent for future Supabase migration:
