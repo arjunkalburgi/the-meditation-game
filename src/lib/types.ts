@@ -9,7 +9,14 @@ declare global {
 export interface MeditationResults {
     clickTimestamps: number[], 
     durationMeditated: number, 
-    completed: boolean 
+    completed: boolean,
+    levelId: string,
+    previousStarRating: 0 | 1 | 2 | 3,
+    newStarRating: 0 | 1 | 2 | 3,
+    newlyCompletedTasks: string[],
+    completionTaskResults: Record<string, boolean>,
+    isNewPersonalBest: boolean,
+    personalBest: { tapCount: number; duration: number } | null
 }
 
 export enum MeditationDuration {
