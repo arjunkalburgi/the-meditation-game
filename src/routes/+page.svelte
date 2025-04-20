@@ -33,9 +33,9 @@
 	}
 </script>
 
-<div class="container h-full mx-auto flex flex-col p-6">
+<div class="h-full mx-auto flex flex-col p-6 mt-6">
 	<div class="space-y-6 text-center">
-		<h2 class="h2">Welcome to The Meditation Game!</h2>
+		<h1 class="h2">Welcome to The Meditation Game!</h1>
 		<p>Learn how to meditate through gameplay</p>
 	</div>
 
@@ -44,17 +44,20 @@
 			<div class="loading loading-spinner loading-lg"></div>
 		</div>
 	{:else}
-		<div class="flex flex-col gap-6 mt-8 mb-40">
+		<div class="flex flex-col gap-6 mt-8">
+			<h2>Section 1: Focus</h2>
 			{#each levelStatuses as { level, isUnlocked, progress }}
-				<div class="card p-8 {!isUnlocked ? 'opacity-50' : ''}">
+				<div class="card p-8 {!isUnlocked ? 'opacity-90' : ''}">
 					<div class="flex justify-between items-start mb-8">
 						<div class="space-y-3">
-							<h3 class="text-xl font-bold">{level.name}</h3>
+							<h3 class="text-xl font-bold">
+								{#if !isUnlocked}
+									<span class="text-2xl">🔒</span>
+								{/if}
+								{level.name}
+							</h3>
 							<p class="text-sm text-gray-600">{level.description}</p>
 						</div>
-						{#if !isUnlocked}
-							<span class="text-2xl">🔒</span>
-						{/if}
 					</div>
 
 					{#if isUnlocked}
@@ -104,9 +107,13 @@
 				</div>
 			{/each}
 		</div>
+		<div class="mt-8">
+			<h2>Section 2: Sharpness</h2>
+			<i>Coming soon</i>
+		</div>
 	{/if}
 
-	<div class="absolute bottom-6 text-center text-sm text-gray-500">
+	<div class="text-center text-sm text-gray-500 mt-40">
 		<p>
 			Learn to meditate for real at 
 			<a href="https://www.dhamma.org" target="_blank" class="text-blue-500 underline">dhamma.org ↗</a>
@@ -120,9 +127,3 @@
 </div>
 
 <Modal bind:show={showModal} duration={selectedDuration} levelId={selectedLevel} />
-
-<style lang="postcss">
-	.container {
-		@apply flex justify-center items-center;
-	}
-</style>
