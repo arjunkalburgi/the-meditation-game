@@ -38,8 +38,8 @@
 </script>
 
 <div class="h-full mx-auto flex flex-col p-6 mt-6">
-	<div class="space-y-6 text-center">
-		<h1 class="h2">Welcome to The Meditation Game!</h1>
+	<div class="space-y-6 text-center mt-10 mb-8">
+		<h1 class="h2">Welcome to <br/>The Meditation Game!</h1>
 		<p>Learn how to meditate through gameplay</p>
 	</div>
 
@@ -48,10 +48,10 @@
 			<div class="loading loading-spinner loading-lg"></div>
 		</div>
 	{:else}
-		<div class="flex flex-col gap-6 mt-8">
-			<h2 class="text-xl font-bold">Section 1: Focus</h2>
+		<div class="flex flex-col gap-6 mt-8 max-w-3xl mx-auto w-full">
+			<h2 class="font-bold">Section 1: Focus</h2>
 			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating, bestSession }}
-				<div class="card p-8 {!isUnlocked ? 'opacity-90' : ''}">
+				<div class="card bg-[#ffffffa6] p-8 {!isUnlocked ? 'opacity-60' : ''}">
 					<div class="flex justify-between items-center mb-2">
 						<h3 class="text-lg font-bold">
 							{#if !isUnlocked}
