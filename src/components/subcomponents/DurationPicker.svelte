@@ -3,8 +3,12 @@
     
     export let selectedDuration: number;
     export let onDurationChange: (duration: number) => void;
+    export let minDuration: MeditationDuration = MeditationDuration.ONE_MINUTE;
+    export let maxDuration: MeditationDuration = MeditationDuration.SIXTY_MINUTES;
 
-    const durations = Object.values(MeditationDuration).filter(value => typeof value === 'number') as MeditationDuration[];
+    const durations = Object.values(MeditationDuration)
+        .filter(v => typeof v === 'number')
+        .filter(d => d >= minDuration && d <= maxDuration) as MeditationDuration[];
 </script>
 
 <div class="flex flex-col items-center gap-4">

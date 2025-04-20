@@ -5,6 +5,13 @@
 	import { getLevelStatuses } from "$lib/utils/levelQueries";
 	import { onMount } from "svelte";
 
+	function getDurationsBetween(min: MeditationDuration, max: MeditationDuration): number[] {
+		const mins = Object.values(MeditationDuration)
+			.map(Number)
+			.sort((a, b) => a - b);
+		return mins.filter(m => m >= min && m <= max);
+	}
+
 	let showModal: boolean = false;
 	let selectedDuration: number = MeditationDuration.ONE_MINUTE;
 	let selectedLevel: string | null = null;
@@ -54,7 +61,9 @@
 						<div class="space-y-4">
 							<DurationPicker 
 								selectedDuration={selectedDuration} 
-								onDurationChange={(d) => selectedDuration = d} 
+								onDurationChange={(d) => selectedDuration = d}
+								minDuration={level.minDuration}
+								maxDuration={level.maxDuration}
 							/>
 							<button 
 								class="btn variant-filled w-full" 

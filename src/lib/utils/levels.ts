@@ -1,12 +1,13 @@
 import type { FocusLevel } from '$lib/types';
+import { MeditationDuration } from '$lib/types';
 import { db } from '$lib/db';
 
 export const focusLevels: FocusLevel[] = [
     {
         id: "L1",
         name: "The First Catch",
-        minDuration: 3,
-        maxDuration: 5,
+        minDuration: MeditationDuration.ONE_MINUTE,
+        maxDuration: MeditationDuration.FIVE_MINUTES,
         description: "Notice distraction without judgment.",
         unlockCriteria: async (sessions) => {
             const l1Sessions = await db.sessions.where('levelId').equals('L1').toArray();
@@ -16,8 +17,8 @@ export const focusLevels: FocusLevel[] = [
     {
         id: "L2",
         name: "Hold the Thread",
-        minDuration: 6,
-        maxDuration: 8,
+        minDuration: MeditationDuration.FIVE_MINUTES,
+        maxDuration: MeditationDuration.FIFTEEN_MINUTES,
         description: "Gently return the mind to focus.",
         unlockCriteria: async (sessions) => {
             const l1Sessions = await db.sessions.where('levelId').equals('L1').toArray();
@@ -34,8 +35,8 @@ export const focusLevels: FocusLevel[] = [
     {
         id: "L3",
         name: "Steady Beam",
-        minDuration: 10,
-        maxDuration: 10,
+        minDuration: MeditationDuration.TEN_MINUTES,
+        maxDuration: MeditationDuration.THIRTY_MINUTES,
         description: "Felt sense of continuity and confidence.",
         unlockCriteria: async (sessions) => {
             const l3Sessions = await db.sessions.where('levelId').equals('L3').toArray();
