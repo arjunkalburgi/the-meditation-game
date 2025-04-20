@@ -3,6 +3,7 @@
 	import type { MeditationResults } from '$lib/types';
 	import { secondsToDisplayTime } from '$lib/utils';
 	import { focusLevels } from '$lib/utils/levels';
+	import { buildShareText, getTemplateUsed } from '$lib/utils/share';
 
 	export let closeModal;
 	export let meditationResults: MeditationResults;
@@ -34,18 +35,21 @@
 
 	const shareResults = () => {
 		if (navigator.share) {
+			const starsGained = meditationResults.newStarRating - meditationResults.previousStarRating;
+			const templateUsed = getTemplateUsed(meditationResults);
+			
 			posthog.capture("results_shared", { 
 				total_taps: totalDistractions, 
 				distractionRate, 
 				level: 0,
-				stars_gained: meditationResults.newStarRating - meditationResults.previousStarRating,
-				tasks_completed: meditationResults.newlyCompletedTasks.length
+				stars_gained: starsGained,
+				tasks_completed: meditationResults.newlyCompletedTasks.length,
+				template_used: templateUsed,
+				personal_best: meditationResults.isNewPersonalBest
 			});
-			const shareText = 'The Meditation Game App\n' +
-				'I just finished a ' + getDurationText(meditationResults.durationMeditated) + ' meditation with ' + totalDistractions + ' distractions.\n' +
-				'That\'s about ' + distractionRate + ' distractions per minute.\n' +
-				'I\'m at ' + meditationResults.newStarRating + '/3 ⭐ in this level!\n' +
-				'Meditate here: https://www.arjunkalburgi.com/the-meditation-game/?utm_source=share';
+			
+			const shareText = buildShareText(meditationResults);
+			
 			navigator.share({
 				text: shareText,
 			}).catch((error) => console.error("Sharing failed", error));
