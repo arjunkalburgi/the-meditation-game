@@ -61,4 +61,5 @@ export type FocusLevel = {
         description: string;
     }>;
     starRules: StarRule[];
+    selectedDuration?: MeditationDuration;
 };  

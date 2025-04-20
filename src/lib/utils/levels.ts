@@ -5,7 +5,7 @@ import { db } from '$lib/db';
 export const focusLevels: FocusLevel[] = [
     {
         id: "L1",
-        name: "Start here",
+        name: "Level 1",
         minDuration: MeditationDuration.ONE_MINUTE,
         maxDuration: MeditationDuration.FIVE_MINUTES,
         description: "Notice distraction without judgment.",
@@ -56,7 +56,7 @@ export const focusLevels: FocusLevel[] = [
     },
     {
         id: "L2",
-        name: "Keep improving",
+        name: "Level 2",
         minDuration: MeditationDuration.FIVE_MINUTES,
         maxDuration: MeditationDuration.FIFTEEN_MINUTES,
         description: "Gently return the mind to focus.",
@@ -107,7 +107,7 @@ export const focusLevels: FocusLevel[] = [
     },
     {
         id: "L3",
-        name: "Focus power",
+        name: "Level 3",
         minDuration: MeditationDuration.TEN_MINUTES,
         maxDuration: MeditationDuration.THIRTY_MINUTES,
         description: "Feel a sense of continuity and confidence.",

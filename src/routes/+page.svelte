@@ -17,7 +17,9 @@
 		getLevelStatuses()
 			.then(s => {
 				levelStatuses = s;
-				console.log(s);
+				s.forEach(({ level }) => {
+					level.selectedDuration = level.minDuration;
+				});
 				loading = false;
 			})
 			.catch(error => {
@@ -47,40 +49,55 @@
 		</div>
 	{:else}
 		<div class="flex flex-col gap-6 mt-8">
-			<h2>Section 1: Focus</h2>
+			<h2 class="text-xl font-bold">Section 1: Focus</h2>
 			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating, bestSession }}
 				<div class="card p-8 {!isUnlocked ? 'opacity-90' : ''}">
-					<div class="flex justify-between items-start mb-8">
-						<div class="space-y-3">
-							<h3 class="text-xl font-bold">
-								{#if !isUnlocked}
-									<span class="text-2xl">🔒</span>
-								{/if}
-								{level.name}
-							</h3>
-							<p class="text-sm text-gray-600">{level.description}</p>
-							{#if bestSession && isUnlocked}
-								<p class="text-sm text-muted-foreground">
-									Best: {bestSession.tapCount} taps · {sToMin(bestSession.duration)} min
-								</p>
+					<div class="flex justify-between items-center mb-2">
+						<h3 class="text-lg font-bold">
+							{#if !isUnlocked}
+								<span class="text-2xl">🔒</span>
 							{/if}
-						</div>
+							{level.name}
+						</h3>
 						{#if starRating !== undefined && isUnlocked}
 							<div class="flex items-center">
 								{#each Array(3) as _, i}
-									<span class="text-2xl {i < starRating ? 'text-yellow-500' : 'text-gray-300'}">
-										★
-									</span>
+									{#if i < starRating}
+										<span class="text-2xl">⭐</span>
+									{:else}
+										<span class="text-2xl text-gray-300">★</span>
+									{/if}
 								{/each}
 							</div>
 						{/if}
 					</div>
 
+					<div class="mb-2">
+						<p class="text-sm text-muted-foreground mb-2">{level.description}</p>
+						{#if bestSession && isUnlocked}
+							<p class="text-sm text-gray-500">
+								Your best: {bestSession.tapCount} taps · {sToMin(bestSession.duration)} min
+							</p>
+						{/if}
+					</div>
+					
+					{#if taskCompletion && isUnlocked}
+						<div class="space-y-0">
+							{#each level.completionTasks as task, i}
+								<div class="flex items-center">
+									<span class="mr-2 text-sm text-gray-500">
+										{taskCompletion[task.id] ? '✅' : '🔲'} {task.description}
+									</span>
+								</div>
+							{/each}
+						</div>
+					{/if}
+
 					{#if isUnlocked}
-						<div class="space-y-6">
+						<div class="space-y-6 mt-8">
 							<DurationPicker 
-								selectedDuration={selectedDuration} 
-								onDurationChange={(d) => selectedDuration = d}
+								selectedDuration={level.selectedDuration} 
+								onDurationChange={(d) => level.selectedDuration = d}
 								minDuration={level.minDuration}
 								maxDuration={level.maxDuration}
 							/>
@@ -88,6 +105,7 @@
 								class="btn variant-filled w-full" 
 								on:click={() => {
 									selectedLevel = level.id;
+									selectedDuration = level.selectedDuration;
 									startMeditation();
 								}}
 							>
@@ -95,28 +113,10 @@
 							</button>
 						</div>
 					{:else}
-						<div class="space-y-4">
+						<div class="space-y-4 mt-8">
 							<p class="text-sm text-gray-500">
 								Complete previous levels to unlock
 							</p>
-						</div>
-					{/if}
-					
-					{#if taskCompletion && isUnlocked}
-						<div class="mt-6 space-y-3">
-							<h4 class="font-medium">Completion Tasks:</h4>
-							<div class="space-y-2">
-								{#each level.completionTasks as task, i}
-									<div class="flex items-center">
-										<span class="mr-2 {taskCompletion[task.id] ? 'text-green-500' : 'text-gray-400'}">
-											{taskCompletion[task.id] ? '✅' : '🔲'}
-										</span>
-										<span class="text-sm {taskCompletion[task.id] ? 'text-gray-700' : 'text-gray-500'}">
-											{task.description}
-										</span>
-									</div>
-								{/each}
-							</div>
 						</div>
 					{/if}
 				</div>

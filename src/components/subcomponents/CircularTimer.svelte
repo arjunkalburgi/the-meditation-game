@@ -13,14 +13,39 @@
 	let timer: NodeJS.Timeout;
 	
 	const soundFile = "/sounds/gong.mp3";
-	let audio = new Audio(soundFile);
+	let audioBuffer: AudioBuffer | null = null;
 	
 	const formattedTime = derived(timeLeft, ($t) => secondsToDisplayTime($t));
 	const percentageTimeLeft = derived(timeLeft, ($t) => $t / duration);
 
+	const playSound = async () => {
+		if (!window.audioContext || !audioBuffer) return;
+		
+		try {
+			const source = window.audioContext.createBufferSource();
+			source.buffer = audioBuffer;
+			source.connect(window.audioContext.destination);
+			source.start(0);
+		} catch (err) {
+			console.error('Error playing sound:', err);
+		}
+	};
+
+	const loadSound = async () => {
+		if (!window.audioContext) return;
+		
+		try {
+			const response = await fetch(soundFile);
+			const arrayBuffer = await response.arrayBuffer();
+			audioBuffer = await window.audioContext.decodeAudioData(arrayBuffer);
+		} catch (err) {
+			console.error('Error loading sound:', err);
+		}
+	};
+
 	const onTimerComplete = () => {
 		clearInterval(timer);
-		audio.play();
+		playSound();
 		dispatch("complete");
 	}
 
@@ -43,6 +68,9 @@
 		timer = setInterval(() => {
 			timeLeft.update((t) => (t > 0 ? t - 1 : (onTimerComplete(), 0)));
 		}, 1000);
+
+		// Load the sound file
+		loadSound();
 
 		// Request wake lock to prevent device from sleeping during countdown
 		handleWakeLock(true);
