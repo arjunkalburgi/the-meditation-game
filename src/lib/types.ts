@@ -1,3 +1,5 @@
+import type { StarRule } from './types/gamification';
+
 declare global {
     interface Window {
         audioContext?: AudioContext;
@@ -48,4 +50,9 @@ export type FocusLevel = {
     unlockCriteria: (sessions: MeditationSession[]) => Promise<boolean>;
     description: string;
     instructions: string[];
+    completionTasks: Array<{
+        id: string;
+        description: string;
+    }>;
+    starRules: StarRule[];
 };  

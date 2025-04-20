@@ -46,7 +46,7 @@
 	{:else}
 		<div class="flex flex-col gap-6 mt-8">
 			<h2>Section 1: Focus</h2>
-			{#each levelStatuses as { level, isUnlocked, progress }}
+			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating }}
 				<div class="card p-8 {!isUnlocked ? 'opacity-90' : ''}">
 					<div class="flex justify-between items-start mb-8">
 						<div class="space-y-3">
@@ -58,6 +58,15 @@
 							</h3>
 							<p class="text-sm text-gray-600">{level.description}</p>
 						</div>
+						{#if starRating !== undefined && isUnlocked}
+							<div class="flex items-center">
+								{#each Array(3) as _, i}
+									<span class="text-2xl {i < starRating ? 'text-yellow-500' : 'text-gray-300'}">
+										★
+									</span>
+								{/each}
+							</div>
+						{/if}
 					</div>
 
 					{#if isUnlocked}
@@ -81,27 +90,26 @@
 					{:else}
 						<div class="space-y-4">
 							<p class="text-sm text-gray-500">
-								{#if progress}
-									{#if progress.improvementNeeded}
-										Improve by {progress.improvementNeeded.toFixed(1)} taps to unlock
-									{:else}
-										Complete {progress.requiredSessions - progress.sessionsCompleted} more sessions to unlock
-									{/if}
-								{:else}
-									Complete previous levels to unlock
-								{/if}
+								Complete previous levels to unlock
 							</p>
-							{#if progress}
-								<div class="w-full bg-gray-200 rounded-full h-2.5">
-									<div 
-										class="bg-blue-600 h-2.5 rounded-full" 
-										style="width: {(progress.sessionsCompleted / progress.requiredSessions) * 100}%"
-									></div>
-								</div>
-								<p class="text-xs text-gray-500 text-right">
-									{progress.sessionsCompleted}/{progress.requiredSessions} sessions
-								</p>
-							{/if}
+						</div>
+					{/if}
+					
+					{#if taskCompletion && isUnlocked}
+						<div class="mt-6 space-y-3">
+							<h4 class="font-medium">Completion Tasks:</h4>
+							<div class="space-y-2">
+								{#each level.completionTasks as task, i}
+									<div class="flex items-center">
+										<span class="mr-2 {taskCompletion[task.id] ? 'text-green-500' : 'text-gray-400'}">
+											{taskCompletion[task.id] ? '✅' : '🔲'}
+										</span>
+										<span class="text-sm {taskCompletion[task.id] ? 'text-gray-700' : 'text-gray-500'}">
+											{task.description}
+										</span>
+									</div>
+								{/each}
+							</div>
 						</div>
 					{/if}
 				</div>
