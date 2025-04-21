@@ -7,19 +7,19 @@ import type { MeditationSession } from '$lib/types';
 * SELECT tapCount, duration
 * FROM meditationSessions
 * WHERE levelId = :levelId AND completed = true
-* ORDER BY tapCount ASC, duration DESC, timestamp DESC
+* ORDER BY duration DESC, tapCount ASC, timestamp DESC
 * LIMIT 1;
 */
 export function selectBestSession(sessions: MeditationSession[]): { tapCount: number; duration: number } | null {
     return sessions
-    .filter(s => s.completed)
-    .sort((a, b) =>
-        a.tapCount !== b.tapCount
-    ? a.tapCount - b.tapCount
-    : b.duration !== a.duration
-    ? b.duration - a.duration
-    : b.timestamp - a.timestamp
-)[0] ?? null;
+        .filter(s => s.completed)
+        .sort((a, b) =>
+            b.duration !== a.duration
+                ? b.duration - a.duration
+                : a.tapCount !== b.tapCount
+                ? a.tapCount - b.tapCount
+                : b.timestamp - a.timestamp
+        )[0] ?? null;
 }
 
 /**
