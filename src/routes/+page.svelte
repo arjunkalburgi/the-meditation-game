@@ -86,7 +86,10 @@
 							{#each level.completionTasks as task, i}
 								<div class="flex items-center">
 									<span class="mr-2 text-sm text-gray-500">
-										{taskCompletion[task.id] ? '✅' : '🔲'} {task.description}
+										{taskCompletion[task.id].completed ? '✅' : '🔲'} {task.description}
+										{#if !taskCompletion[task.id].completed && taskCompletion[task.id].info}
+											({taskCompletion[task.id].info})
+										{/if}
 									</span>
 								</div>
 							{/each}
