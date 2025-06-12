@@ -1,5 +1,3 @@
-import type { StarRule } from '$lib/types/gamification';
-
 declare global {
     interface Window {
         audioContext?: AudioContext;
@@ -48,18 +46,3 @@ export interface MeditationSession {
     timestamp: number;
     completed: boolean;
 }
-
-export type FocusLevel = {
-    id: string;
-    name: string;
-    minDuration: MeditationDuration;
-    maxDuration: MeditationDuration;
-    description: string;
-    instructions: string[];
-    completionTasks: Array<{
-        id: string;
-        description: string;
-    }>;
-    starRules: StarRule[];
-    selectedDuration?: MeditationDuration;
-};  

@@ -1,64 +1,119 @@
-import type { MeditationSession, FocusLevel } from '$lib/types';
+import type { MeditationSession } from '$lib/types';
+import type { TaskCompletionStatus, FocusLevel } from '$lib/types/gamification';
+import { countImprovements, longestNoTapStreak, countMatching, anyMatching } from './gamification';
 
-/**
- * Evaluates which completion tasks were fulfilled in a given meditation session.
- * This function must stay in sync with SQL when we migrate to Supabase.
- * 
- * @param session A single MeditationSession object
- * @param level The FocusLevel containing completionTasks
- * @returns Set of task IDs completed in this session
- */
-export function getCompletedTasksForSession(session: MeditationSession, level: FocusLevel): Set<string> {
-    const completedTasks = new Set<string>();
+export const taskEvaluators: Record< string, (sessions: MeditationSession[], level: FocusLevel) => TaskCompletionStatus> = {
+    tap_once: ([first]) => ({
+        completed: first?.tapCount >= 1,
+    }),
     
-    // Check each task based on its ID
-    for (const task of level.completionTasks) {
-        switch (task.id) {
-            case 'tap_once':
-                if (session.tapCount > 0) completedTasks.add(task.id);
-                break;
-                
-            case 'no_early_exit':
-                if (session.completed) completedTasks.add(task.id);
-                break;
-                
-            case 'max_duration':
-                if (session.duration >= level.maxDuration) completedTasks.add(task.id);
-                break;
-                
-            case 'session_under_5_taps':
-                if (session.tapCount <= 5) completedTasks.add(task.id);
-                break;
-                
-            case '2_sessions_under_8_taps':
-                if (session.tapCount <= 8) completedTasks.add(task.id);
-                break;
-                
-            case 'one_min_no_taps':
-                // Check if there's a 60-second period without taps
-                if (session.tapTimestamps.length === 0) {
-                    completedTasks.add(task.id);
-                } else if (session.tapTimestamps.length === 1) {
-                    if (session.tapTimestamps[0] > 60 || session.duration - session.tapTimestamps[0] > 60) {
-                        completedTasks.add(task.id);
-                    }
-                } else {
-                    // Check gaps between consecutive taps
-                    for (let i = 0; i < session.tapTimestamps.length - 1; i++) {
-                        if (session.tapTimestamps[i+1] - session.tapTimestamps[i] > 60) {
-                            completedTasks.add(task.id);
-                            break;
-                        }
-                    }
-                    
-                    // Check gap at the beginning and end
-                    if (session.tapTimestamps[0] > 60 || session.duration - session.tapTimestamps[session.tapTimestamps.length - 1] > 60) {
-                        completedTasks.add(task.id);
-                    }
-                }
-                break;
+    no_early_exit: ([first]) => ({
+        completed: first?.completed === true,
+    }),
+    
+    session_under_5_taps: ([first]) => ({
+        completed: first?.tapCount <= 5,
+    }),
+    
+    session_with_2_or_fewer_taps: (sessions) => {
+        const ok = anyMatching(sessions, s => s.tapCount <= 2);
+        return {
+            completed: ok,
+            info: ok ? undefined : 'Need session with ≤2 taps',
+        };
+    },
+    
+    session_with_3_or_fewer_taps: (sessions) => {
+        const ok = anyMatching(sessions, s => s.tapCount <= 3);
+        return {
+            completed: ok,
+            info: ok ? undefined : 'Need session with ≤3 taps',
+        };
+    },
+    
+    distractions_early_on: ([first]) => ({
+        completed: first?.tapTimestamps?.filter(t => t <= 60).length >= 2,
+    }),
+    
+    complete_2_sessions: (sessions) => ({
+        completed: sessions.length >= 2,
+        info: sessions.length >= 2 ? undefined : `${2 - sessions.length} sessions left`,
+    }),
+    
+    complete_3_sessions: (sessions) => ({
+        completed: sessions.length >= 3,
+        info: sessions.length >= 3 ? undefined : `${3 - sessions.length} sessions left`,
+    }),
+    
+    two_sessions_under_5_taps: (sessions) => {
+        let streak = 0;
+        for (let i = sessions.length - 1; i >= 0; i--) {
+            if (sessions[i].tapCount < 5) {
+                streak++;
+                if (streak === 2) break;
+            } else {
+                streak = 0;
+            }
         }
-    }
+        return {
+            completed: streak === 2,
+            info: streak === 2 ? undefined : `${2 - streak} in-a-row sessions left`,
+        };
+    },
     
-    return completedTasks;
-} 
+    two_sessions_under_8_taps: (sessions) => {
+        const count = countMatching(sessions, s => s.tapCount <= 8);
+        return {
+            completed: count >= 2,
+            info: count >= 2 ? undefined : `${2 - count} sessions left`,
+        };
+    },
+    
+    one_min_no_taps: (sessions) => {
+        const ok = anyMatching(sessions, s => longestNoTapStreak(s) >= 60);
+        return {
+            completed: ok,
+            info: ok ? undefined : 'Need 1 minute without taps',
+        };
+    },
+    
+    one_min_no_taps_twice: (sessions) => {
+        const count = countMatching(sessions, s => longestNoTapStreak(s) >= 60);
+        return {
+            completed: count >= 2,
+            info: count >= 2 ? undefined : `${2 - count} sessions left`,
+        };
+    },
+    
+    two_min_no_taps: (sessions) => {
+        const ok = anyMatching(sessions, s => longestNoTapStreak(s) >= 120);
+        return {
+            completed: ok,
+            info: ok ? undefined : 'Need 2 minutes without taps',
+        };
+    },
+    
+    three_min_no_taps: (sessions) => {
+        const ok = anyMatching(sessions, s => longestNoTapStreak(s) >= 180);
+        return {
+            completed: ok,
+            info: ok ? undefined : 'Need 3 minutes without taps',
+        };
+    },
+    
+    improve_tap_count_2_sessions: (sessions) => {
+        const improved = countImprovements(sessions);
+        return {
+            completed: improved >= 2,
+            info: improved >= 2 ? undefined : `${2 - improved} improvements left`,
+        };
+    },
+    
+    max_duration: (sessions, level) => {
+        const ok = sessions.some(s => s.duration >= level.maxDuration);
+        return {
+            completed: ok,
+            info: ok ? undefined : 'Need session at max duration',
+        };
+    },
+};
