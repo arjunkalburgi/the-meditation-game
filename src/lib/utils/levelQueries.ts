@@ -22,7 +22,7 @@ export async function checkTaskCompletion(levelId: string): Promise<TaskCompleti
             continue;
         }
         
-        taskCompletion[task.id] = evaluator(sessions, level);
+        taskCompletion[task.id] = {...evaluator(sessions, level), ...task};
     }
     
     return taskCompletion;

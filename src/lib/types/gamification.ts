@@ -50,6 +50,8 @@ export interface StarRule {
 export type TaskCompletionStatus = {
     completed: boolean;
     info?: string;
+    id?: string;
+    description?: string;
 };
 
 export type TaskCompletionMap = {

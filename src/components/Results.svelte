@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import posthog from '$lib/posthog';
 	import type { MeditationResults } from '$lib/types';
 	import { sToMin } from '$lib/utils';
-	import { focusLevels } from '$lib/utils/levels';
 	import { buildShareText, getTemplateUsed } from '$lib/utils/share';
+	import { checkTaskCompletion } from '$lib/utils/levelQueries';
+	import type { TaskCompletionMap } from '$lib/types/gamification';
 
 	export let closeModal;
 	export let meditationResults: MeditationResults;
@@ -12,17 +14,13 @@
 	const distractionRate = totalDistractions > 0 
 		? (totalDistractions / (meditationResults.durationMeditated / 60)).toFixed(1)
 		: '0';
+	let taskCompletion: TaskCompletionMap = {};
 
-	// Get the current level to access task descriptions
-	const currentLevel = focusLevels.find(level => level.id === meditationResults.levelId);
-	
-	// Create a lookup map for task descriptions
-	const taskDescriptions: Record<string, string> = {};
-	if (currentLevel) {
-		currentLevel.completionTasks.forEach(task => {
-			taskDescriptions[task.id] = task.description;
-		});
-	}
+	onMount(async () => {
+		if (meditationResults?.levelId) {
+			taskCompletion = await checkTaskCompletion(meditationResults.levelId);
+		}
+	});
 
 	const getDurationText = (duration: number) => {
 		const minutes = Math.floor(duration / 60);
@@ -111,14 +109,21 @@
 	{/if}
 
 	<h3 class="mt-6 font-semibold">Level tasks</h3>
-	<ul class="mt-2 space-y-1 text-left max-h-40 overflow-y-auto">
-		{#each Object.entries(meditationResults.completionTaskResults) as [taskId, done]}
-			<li class="flex items-center">
-				<span class="mr-2">{done ? '✅' : '🔲'}</span>
-				{taskDescriptions[taskId] || taskId}
-			</li>
-		{/each}
-	</ul>
+	{#if taskCompletion}
+		<ul class="mt-2 space-y-1 text-left max-h-40 overflow-y-auto">
+			{#each Object.entries(taskCompletion) as [_, task]}
+				<li class="flex items-center">
+					<span class="mr-2">
+						{task.completed ? '✅' : '🔲'} {task.description}
+						{#if taskCompletion.info}
+							({taskCompletion.info})
+						{/if}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
 
 	{#if meditationResults.newlyCompletedTasks.length > 0}
 		<p class="mt-2 text-sm text-accent-foreground">
