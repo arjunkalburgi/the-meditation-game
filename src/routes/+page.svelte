@@ -49,7 +49,6 @@
 		</div>
 	{:else}
 		<div class="flex flex-col gap-6 mt-8 max-w-3xl mx-auto w-full">
-			<h2 class="font-bold">Section 1: Focus</h2>
 			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating, bestSession }}
 				<div class="card bg-[#ffffffa6] p-8 {!isUnlocked ? 'opacity-60' : ''}">
 					<div class="flex justify-between items-center mb-2">
@@ -121,10 +120,6 @@
 					{/if}
 				</div>
 			{/each}
-		</div>
-		<div class="mt-8">
-			<h2>Section 2: Sharpness</h2>
-			<i>Coming soon</i>
 		</div>
 	{/if}
 
