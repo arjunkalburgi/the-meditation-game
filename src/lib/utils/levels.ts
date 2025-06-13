@@ -56,14 +56,14 @@ export const focusLevels: FocusLevel[] = [
     {
         id: "L2",
         name: "Level 2",
-        minDuration: MeditationDuration.ONE_MINUTE,
-        maxDuration: MeditationDuration.FIVE_MINUTES,
+        minDuration: MeditationDuration.TWO_MINUTES,
+        maxDuration: MeditationDuration.TEN_MINUTES,
         description: "Let go of counting and images.",
         instructions: [
             "Focus on the breath through your nose",
             "Don’t count, visualize, or repeat words",
             "Tap when your mind wanders",
-            "Return to the breath, no extra tools"
+            "Return to the breath, without mental help"
         ],
         completionTasks: [
             { id: 'complete_3_sessions', description: 'Complete 3 sessions' },

@@ -106,7 +106,7 @@
 								class="btn variant-filled w-full" 
 								on:click={() => {
 									selectedLevel = level.id;
-									selectedDuration = level.selectedDuration;
+									selectedDuration = level.selectedDuration ?? level.minDuration;
 									startMeditation();
 								}}
 							>
@@ -116,7 +116,7 @@
 					{:else}
 						<div class="space-y-4 mt-8">
 							<p class="text-sm text-gray-500">
-								Complete previous levels to unlock
+								Achieve 2 stars in previous levels to unlock
 							</p>
 						</div>
 					{/if}

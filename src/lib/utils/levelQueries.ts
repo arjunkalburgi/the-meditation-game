@@ -22,7 +22,7 @@ export async function checkTaskCompletion(levelId: string): Promise<TaskCompleti
             continue;
         }
         
-        taskCompletion[task.id] = {...evaluator(sessions, level), ...task};
+        taskCompletion[task.id] = {...task, ...evaluator(sessions, level)};
     }
     
     return taskCompletion;
@@ -34,7 +34,7 @@ export async function getLevelStatuses(): Promise<LevelStatus[]> {
     for (let i = 0; i < focusLevels.length; i++) {
         const level: FocusLevel = focusLevels[i];
         const sessions = await db.sessions.where('levelId').equals(level.id).toArray();
-        const isUnlocked = i === 0 || (results[i - 1]?.starRating ?? 0) > 1;
+        const isUnlocked = i === 0 || (results[i - 1]?.starRating ?? 0) > 1; // need 2+ stars to unlock next level
 
         let taskCompletion = null;
         let starRating = undefined;
@@ -42,6 +42,7 @@ export async function getLevelStatuses(): Promise<LevelStatus[]> {
         
         if (isUnlocked) {
             taskCompletion = await checkTaskCompletion(level.id);
+
             const completedTaskIds = new Set(
                 Object.entries(taskCompletion)
                     .filter(([_, v]) => v.completed)
