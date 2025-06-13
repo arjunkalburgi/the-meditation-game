@@ -9,7 +9,7 @@
 	import { calculateStars, selectBestSession } from '$lib/utils/gamification';
 	import { checkTaskCompletion } from '$lib/utils/levelQueries';
 	import { focusLevels } from '$lib/utils/levels';
-	import { getCompletedTasksForSession } from '$lib/utils/taskEvaluation';
+	import { taskEvaluators } from '$lib/utils/taskEvaluation';
 
 	export let show = false;
 	export let duration = MeditationDuration.ONE_MINUTE;
@@ -35,13 +35,17 @@
 		const previousTaskCompletion = await checkTaskCompletion(currentLevelId);
 		const previousCompletedTaskIds = new Set(
 			Object.entries(previousTaskCompletion)
-				.filter(([_, completed]) => completed)
+				.filter(([_, status]) => status.completed)
 				.map(([taskId]) => taskId)
 		);
 		
 		// Calculate previous star rating
 		const previousPerSessionCompleted: Set<string>[] = levelSessions.map(session => 
-			getCompletedTasksForSession(session, level)
+			new Set(
+				level.completionTasks
+					.filter((task: { id: string }) => taskEvaluators[task.id]?.([session], level).completed)
+					.map((task: { id: string }) => task.id)
+			)
 		);
 		
 		const previousStarRating = calculateStars(
@@ -65,19 +69,23 @@
 		const completionTaskResults = await checkTaskCompletion(currentLevelId);
 		const newCompletedTaskIds = new Set(
 			Object.entries(completionTaskResults)
-				.filter(([_, completed]) => completed)
+				.filter(([_, status]) => status.completed)
 				.map(([taskId]) => taskId)
 		);
 		
 		// Calculate newly completed tasks
 		const newlyCompletedTasks = Object.entries(completionTaskResults)
-			.filter(([taskId, completed]) => completed && !previousTaskCompletion[taskId])
+			.filter(([taskId, status]) => status.completed && !previousTaskCompletion[taskId]?.completed)
 			.map(([taskId]) => taskId);
 		
 		// Calculate new star rating with the new session
 		const updatedSessions = await db.sessions.where('levelId').equals(currentLevelId).toArray();
 		const newPerSessionCompleted: Set<string>[] = updatedSessions.map(session => 
-			getCompletedTasksForSession(session, level)
+			new Set(
+				level.completionTasks
+					.filter((task: { id: string }) => taskEvaluators[task.id]?.([session], level).completed)
+					.map((task: { id: string }) => task.id)
+			)
 		);
 		
 		const newStarRating = calculateStars(
@@ -97,7 +105,9 @@
 			previousStarRating,
 			newStarRating,
 			newlyCompletedTasks,
-			completionTaskResults,
+			completionTaskResults: Object.fromEntries(
+				Object.entries(completionTaskResults).map(([key, value]) => [key, value.completed])
+			),
 			isNewPersonalBest: isNewPersonalBest || false,
 			personalBest: bestSession
 		};

@@ -1,64 +1,105 @@
-import type { MeditationSession, FocusLevel } from '$lib/types';
+import type { MeditationSession } from '$lib/types';
+import type { TaskCompletionStatus, FocusLevel } from '$lib/types/gamification';
+import { countImprovements, longestNoTapStreak, countMatching, anyMatching } from './gamification';
 
-/**
- * Evaluates which completion tasks were fulfilled in a given meditation session.
- * This function must stay in sync with SQL when we migrate to Supabase.
- * 
- * @param session A single MeditationSession object
- * @param level The FocusLevel containing completionTasks
- * @returns Set of task IDs completed in this session
- */
-export function getCompletedTasksForSession(session: MeditationSession, level: FocusLevel): Set<string> {
-    const completedTasks = new Set<string>();
+export const taskEvaluators: Record< string, (sessions: MeditationSession[], level: FocusLevel) => TaskCompletionStatus> = {
+    tap_once: ([first]) => ({
+        completed: first?.tapCount >= 1,
+        info: ''
+    }),
     
-    // Check each task based on its ID
-    for (const task of level.completionTasks) {
-        switch (task.id) {
-            case 'tap_once':
-                if (session.tapCount > 0) completedTasks.add(task.id);
-                break;
-                
-            case 'no_early_exit':
-                if (session.completed) completedTasks.add(task.id);
-                break;
-                
-            case 'max_duration':
-                if (session.duration >= level.maxDuration) completedTasks.add(task.id);
-                break;
-                
-            case 'session_under_5_taps':
-                if (session.tapCount <= 5) completedTasks.add(task.id);
-                break;
-                
-            case '2_sessions_under_8_taps':
-                if (session.tapCount <= 8) completedTasks.add(task.id);
-                break;
-                
-            case 'one_min_no_taps':
-                // Check if there's a 60-second period without taps
-                if (session.tapTimestamps.length === 0) {
-                    completedTasks.add(task.id);
-                } else if (session.tapTimestamps.length === 1) {
-                    if (session.tapTimestamps[0] > 60 || session.duration - session.tapTimestamps[0] > 60) {
-                        completedTasks.add(task.id);
-                    }
-                } else {
-                    // Check gaps between consecutive taps
-                    for (let i = 0; i < session.tapTimestamps.length - 1; i++) {
-                        if (session.tapTimestamps[i+1] - session.tapTimestamps[i] > 60) {
-                            completedTasks.add(task.id);
-                            break;
-                        }
-                    }
-                    
-                    // Check gap at the beginning and end
-                    if (session.tapTimestamps[0] > 60 || session.duration - session.tapTimestamps[session.tapTimestamps.length - 1] > 60) {
-                        completedTasks.add(task.id);
-                    }
-                }
-                break;
+    no_early_exit: ([first]) => ({
+        completed: first?.completed === true,
+        info: ''
+    }),
+    
+    session_under_5_taps: ([first]) => ({
+        completed: first?.tapCount <= 5,
+        info: ''
+    }),
+    
+    session_with_2_or_fewer_taps: (sessions) => ({
+        completed: anyMatching(sessions, s => s.tapCount <= 2),
+        info: ''
+    }),
+    
+    session_with_3_or_fewer_taps: (sessions) => ({
+        completed: anyMatching(sessions, s => s.tapCount <= 3),
+        info: ''
+    }),
+    
+    distractions_early_on: ([first]) => ({
+        completed: first?.tapTimestamps?.filter(t => t <= 60).length >= 2,
+        info: ''
+    }),
+    
+    complete_2_sessions: (sessions) => ({
+        completed: sessions.length >= 2,
+        info: sessions.length === 0 || sessions.length >= 2 ? '' : `(1/2 complete)`,
+    }),
+    
+    complete_3_sessions: (sessions) => ({
+        completed: sessions.length >= 3,
+        info: sessions.length === 0 || sessions.length >= 3 ? '' : `(${sessions.length}/3 complete)`,
+    }),
+    
+    two_sessions_under_5_taps: (sessions) => {
+        let streak = 0;
+        for (let i = sessions.length - 1; i >= 0; i--) {
+            if (sessions[i].tapCount < 5) {
+                streak++;
+                if (streak === 2) break;
+            } else {
+                streak = 0;
+            }
         }
-    }
+        return {
+            completed: streak === 2,
+            info: sessions.length === 0 || streak === 2 ? '' : `(${Math.min(streak, 1)}/2 complete)`,
+        };
+    },
     
-    return completedTasks;
-} 
+    two_sessions_under_8_taps: (sessions) => {
+        const count = countMatching(sessions, s => s.tapCount <= 8);
+        return {
+            completed: count >= 2,
+            info: sessions.length === 0 || count >= 2 ? '' : `(${count}/2 complete)`,
+        };
+    },
+    
+    one_min_no_taps: (sessions) => ({
+        completed: anyMatching(sessions, s => longestNoTapStreak(s) >= 60),
+        info: ''
+    }),
+    
+    one_min_no_taps_twice: (sessions) => {
+        const count = countMatching(sessions, s => longestNoTapStreak(s) >= 60);
+        return {
+            completed: count >= 2,
+            info: sessions.length === 0 || count >= 2 ? '' : `(${count}/2 complete)`,
+        };
+    },
+    
+    two_min_no_taps: (sessions) => ({
+        completed: anyMatching(sessions, s => longestNoTapStreak(s) >= 120),
+        info: ''
+    }),
+    
+    three_min_no_taps: (sessions) => ({
+        completed: anyMatching(sessions, s => longestNoTapStreak(s) >= 180),
+        info: ''
+    }),
+    
+    improve_tap_count_2_sessions: (sessions) => {
+        const improved = countImprovements(sessions);
+        return {
+            completed: improved >= 2,
+            info: sessions.length === 0 || improved >= 2 ? '' : `(${improved}/2 complete)`,
+        };
+    },
+    
+    max_duration: (sessions, level) => ({
+        completed: sessions.some(s => s.duration >= level.maxDuration),
+        info: ''
+    }),
+};

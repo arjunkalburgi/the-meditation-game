@@ -106,3 +106,68 @@ export function calculateStars(
     // No rules satisfied
     return 0;
 } 
+
+/**
+ * Counts how many times the user improved their tap rate (taps per minute)
+ * across sessions, compared to the previous session.
+ * 
+ * Improvement is defined as a lower tap rate, or same tap rate with longer duration.
+ */
+export function countImprovements(sessions: MeditationSession[]): number {
+    if (sessions.length < 2) return 0;
+
+    const sorted = [...sessions].sort((a, b) => a.timestamp - b.timestamp);
+    let improvements = 0;
+
+    for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i - 1];
+        const curr = sorted[i];
+
+        const prevRate = prev.tapCount / Math.max(prev.duration, 1);
+        const currRate = curr.tapCount / Math.max(curr.duration, 1);
+
+        if (currRate < prevRate) {
+            improvements++;
+        } else if (
+            Math.abs(currRate - prevRate) <= 0.005 &&
+            curr.duration > prev.duration
+        ) {
+            improvements++;
+        }
+    }
+
+    return improvements;
+}
+
+/**
+ * Returns the longest streak (in minutes) of no taps during a session.
+ * Assumes session.tapTimestamps is sorted and session.duration is in seconds.
+ */
+export function longestNoTapStreak(session: MeditationSession): number {
+    if (!session.tapTimestamps || session.tapTimestamps.length === 0) {
+        return session.duration / 60; // no taps at all — entire session is a streak
+    }
+
+    const gaps: number[] = [];
+
+    // Start to first tap
+    gaps.push(session.tapTimestamps[0]);
+
+    // Between taps
+    for (let i = 1; i < session.tapTimestamps.length; i++) {
+        gaps.push(session.tapTimestamps[i] - session.tapTimestamps[i - 1]);
+    }
+
+    // Last tap to end of session
+    const lastTap = session.tapTimestamps[session.tapTimestamps.length - 1];
+    gaps.push(session.duration - lastTap);
+
+    const maxGapSeconds = Math.max(...gaps);
+    return maxGapSeconds / 60;
+}
+
+export const countMatching = (sessions: MeditationSession[], fn: (s: MeditationSession) => boolean) =>
+    sessions.filter(fn).length;
+
+export const anyMatching = (sessions: MeditationSession[], fn: (s: MeditationSession) => boolean) =>
+    sessions.some(fn);
