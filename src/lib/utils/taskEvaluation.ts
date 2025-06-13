@@ -35,12 +35,12 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
     
     complete_2_sessions: (sessions) => ({
         completed: sessions.length >= 2,
-        info: sessions.length === 0 || sessions.length >= 2 ? undefined : `1/2 complete`,
+        info: sessions.length === 0 || sessions.length >= 2 ? undefined : `(1/2 complete)`,
     }),
     
     complete_3_sessions: (sessions) => ({
         completed: sessions.length >= 3,
-        info: sessions.length === 0 || sessions.length >= 3 ? undefined : `${sessions.length}/3 complete`,
+        info: sessions.length === 0 || sessions.length >= 3 ? undefined : `(${sessions.length}/3 complete)`,
     }),
     
     two_sessions_under_5_taps: (sessions) => {
@@ -55,7 +55,7 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
         }
         return {
             completed: streak === 2,
-            info: sessions.length === 0 || streak === 2 ? undefined : `${Math.min(streak, 1)}/2 complete`,
+            info: sessions.length === 0 || streak === 2 ? undefined : `(${Math.min(streak, 1)}/2 complete)`,
         };
     },
     
@@ -63,7 +63,7 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
         const count = countMatching(sessions, s => s.tapCount <= 8);
         return {
             completed: count >= 2,
-            info: sessions.length === 0 || count >= 2 ? undefined : `${count}/2 complete`,
+            info: sessions.length === 0 || count >= 2 ? undefined : `(${count}/2 complete)`,
         };
     },
     
@@ -78,7 +78,7 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
         const count = countMatching(sessions, s => longestNoTapStreak(s) >= 60);
         return {
             completed: count >= 2,
-            info: sessions.length === 0 || count >= 2 ? undefined : `${count}/2 complete`,
+            info: sessions.length === 0 || count >= 2 ? undefined : `(${count}/2 complete)`,
         };
     },
     
@@ -100,7 +100,7 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
         const improved = countImprovements(sessions);
         return {
             completed: improved >= 2,
-            info: sessions.length === 0 || improved >= 2 ? undefined : `${improved}/2 complete`,
+            info: sessions.length === 0 || improved >= 2 ? undefined : `(${improved}/2 complete)`,
         };
     },
     

@@ -114,10 +114,7 @@
 			{#each Object.entries(taskCompletion) as [_, task]}
 				<li class="flex items-center">
 					<span class="mr-2">
-						{task.completed ? '✅' : '🔲'} {task.description}
-						{#if taskCompletion.info}
-							({taskCompletion.info})
-						{/if}
+						{task.completed ? '✅' : '🔲'} {task.description} {task.info}
 					</span>
 				</li>
 			{/each}

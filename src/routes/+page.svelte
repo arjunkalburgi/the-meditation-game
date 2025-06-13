@@ -3,12 +3,13 @@
 	import DurationPicker from "$components/subcomponents/DurationPicker.svelte";
 	import { MeditationDuration } from "$lib/types";
 	import { getLevelStatuses } from "$lib/utils/levelQueries";
+	import type { LevelStatus } from "$lib/types/gamification";
 	import { sToMin } from "$lib/utils";
 
 	let showModal: boolean = false;
 	let selectedDuration: number = MeditationDuration.ONE_MINUTE;
 	let selectedLevel: string | null = null;
-	let levelStatuses: any[] = [];
+	let levelStatuses: LevelStatus[] = [];
 	let loading: boolean = true;
 
 	// Load page
@@ -83,13 +84,10 @@
 					
 					{#if taskCompletion && isUnlocked}
 						<div class="space-y-0">
-							{#each level.completionTasks as task, i}
+							{#each Object.entries(taskCompletion) as [_, task]}
 								<div class="flex items-center">
 									<span class="mr-2 text-sm text-gray-500">
-										{taskCompletion[task.id].completed ? '✅' : '🔲'} {task.description}
-										{#if !taskCompletion[task.id].completed && taskCompletion[task.id].info}
-											({taskCompletion[task.id].info})
-										{/if}
+										{(task).completed ? '✅' : '🔲'} {task.description} {task.info}
 									</span>
 								</div>
 							{/each}
