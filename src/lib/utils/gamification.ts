@@ -140,8 +140,8 @@ export function countImprovements(sessions: MeditationSession[]): number {
 }
 
 /**
- * Returns the longest streak (in minutes) of no taps during a session.
- * Assumes session.tapTimestamps is sorted and session.duration is in seconds.
+ * Returns the longest streak (in seconds) of no taps during a session.
+ * Assumes tapTimestamps is in order and session.duration is in seconds.
  */
 export function longestNoTapStreak(session: MeditationSession): number {
     if (!session.tapTimestamps || session.tapTimestamps.length === 0) {
@@ -162,8 +162,7 @@ export function longestNoTapStreak(session: MeditationSession): number {
     const lastTap = session.tapTimestamps[session.tapTimestamps.length - 1];
     gaps.push(session.duration - lastTap);
 
-    const maxGapSeconds = Math.max(...gaps);
-    return maxGapSeconds / 60;
+    return Math.max(...gaps);
 }
 
 export const countMatching = (sessions: MeditationSession[], fn: (s: MeditationSession) => boolean) =>
