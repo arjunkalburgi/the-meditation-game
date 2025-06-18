@@ -66,9 +66,6 @@
 			timeLeft.update((t) => (t > 0 ? t - 1 : (onTimerComplete(), 0)));
 		}, 1000);
 
-		// Load the sound file
-		loadSound();
-
 		// Request wake lock to prevent device from sleeping during countdown
 		handleWakeLock(true);
 	})

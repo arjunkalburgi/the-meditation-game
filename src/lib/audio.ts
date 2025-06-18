@@ -37,7 +37,7 @@ export async function getGongBuffer(): Promise<AudioBuffer> {
 
 	try {
 		const ctx = getAudioContext();
-		const response = await fetch('/sounds/gong.mp3');
+		const response = await fetch('/sounds/gong.m4a');
 		const arrayBuffer = await response.arrayBuffer();
 		gongBuffer = await ctx.decodeAudioData(arrayBuffer);
 		posthog.capture('audio_buffer_loaded', {
