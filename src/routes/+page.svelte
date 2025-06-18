@@ -5,6 +5,7 @@
 	import { getLevelStatuses } from "$lib/utils/levelQueries";
 	import type { LevelStatus } from "$lib/types/gamification";
 	import { sToMin } from "$lib/utils";
+	import { preloadGong } from '$lib/audio';
 
 	let showModal: boolean = false;
 	let selectedDuration: number = MeditationDuration.ONE_MINUTE;
@@ -29,11 +30,8 @@
 			});
 	}
 
-	const startMeditation = () => {
-		if (!window.audioContext) {
-			window.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-		}
-
+	const startMeditation = async () => {
+		await preloadGong();
 		showModal = true;
 	}
 </script>

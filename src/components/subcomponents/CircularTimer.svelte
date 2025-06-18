@@ -1,8 +1,10 @@
 <script lang="ts">
+	import posthog from '$lib/posthog';
 	import { derived, writable } from "svelte/store";
 	import { onMount, onDestroy } from "svelte";
 	import { createEventDispatcher } from "svelte";
 	import { secondsToDisplayTime } from "$lib/utils";
+	import { getAudioContext, resumeAudioContext, getGongBuffer } from '$lib/audio';
 
 	export let duration: number;
 	export let startTimestamp: number;
@@ -12,34 +14,29 @@
 	let wakeLock: WakeLockSentinel | null = null;
 	let timer: NodeJS.Timeout;
 	
-	const soundFile = "/sounds/gong.mp3";
-	let audioBuffer: AudioBuffer | null = null;
-	
 	const formattedTime = derived(timeLeft, ($t) => secondsToDisplayTime($t));
 	const percentageTimeLeft = derived(timeLeft, ($t) => $t / duration);
 
 	const playSound = async () => {
-		if (!window.audioContext || !audioBuffer) return;
-		
 		try {
-			const source = window.audioContext.createBufferSource();
-			source.buffer = audioBuffer;
-			source.connect(window.audioContext.destination);
-			source.start(0);
-		} catch (err) {
-			console.error('Error playing sound:', err);
-		}
-	};
+			const ctx = getAudioContext();
+			await resumeAudioContext();
+			const buffer = await getGongBuffer();
 
-	const loadSound = async () => {
-		if (!window.audioContext) return;
-		
-		try {
-			const response = await fetch(soundFile);
-			const arrayBuffer = await response.arrayBuffer();
-			audioBuffer = await window.audioContext.decodeAudioData(arrayBuffer);
+			const source = ctx.createBufferSource();
+			source.buffer = buffer;
+			source.connect(ctx.destination);
+			source.start(0);
+
+			posthog.capture('audio_played_successfully', {
+				context_state: ctx.state,
+				user_agent: navigator.userAgent
+			});
 		} catch (err) {
-			console.error('Error loading sound:', err);
+			posthog.capture('audio_play_failed', {
+				error: String(err),
+				user_agent: navigator.userAgent
+			});
 		}
 	};
 
