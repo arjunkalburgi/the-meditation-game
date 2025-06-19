@@ -1,6 +1,5 @@
 <script lang="ts">
 	import posthog from '$lib/posthog';
-	import { fade } from "svelte/transition";
 	import { onMount } from "svelte";
 	import { DURATION_LABELS } from '$lib/types';
 	import type { MeditationDuration } from '$lib/types';
@@ -44,25 +43,33 @@
 
 <div class="w-full h-full flex flex-col justify-center items-center px-6 space-y-6 text-center relative">
 	<!-- Exit Meditation Button at Top Center -->
-	{#if currentStep >= instructions.length}
-		<button 
-			class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-filled px-4 py-2"
-			on:click={handleExit} 
-			transition:fade
-		>
-			Exit Meditation
-		</button>
-	{/if}
+	<button 
+		class="absolute top-4 left-1/2 transform -translate-x-1/2 btn variant-outlined px-4 py-2 fade-in"
+		style="animation-delay: {instructions.length}s"
+		on:click={handleExit}
+	>
+		Exit Meditation
+	</button>
 
-	<!-- Animated Instructions -->
-	{#each instructions.slice(0, currentStep) as instruction}
-		<p class="text-lg max-w-sm" transition:fade>{@html instruction}</p>
+	{#each instructions as instruction, i}
+		<p class="text-lg max-w-sm fade-in" style="animation-delay: {i}s">{@html instruction}</p>
 	{/each}
 
-	{#if currentStep >= instructions.length}
-		<button class="btn variant-filled px-4 py-2 mt-4" on:click={nextStep} transition:fade>
+	<div class="flex flex-col items-center space-y-4">
+		<button class="btn variant-filled px-4 py-2 mt-8 fade-in" style="animation-delay: {instructions.length}s" on:click={nextStep}>
 			Start meditation countdown
 		</button>
-		<i class="text-sm text-gray-500">Meditating for {DURATION_LABELS[duration]}</i>
-	{/if}
+		<i class="text-sm text-gray-500 fade-in" style="animation-delay: {instructions.length}s">Meditating for {DURATION_LABELS[duration]}</i>
+	</div>
 </div>
+
+<style>
+	.fade-in {
+		opacity: 0;
+		animation: fadeIn 0.6s forwards;
+	}
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+</style>
