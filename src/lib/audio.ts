@@ -3,6 +3,8 @@ import posthog from '$lib/posthog';
 let audioContext: AudioContext | null = null;
 let gongBuffer: AudioBuffer | null = null;
 
+const SOUND_FILE = '/sounds/gong.m4a';
+
 export function getAudioContext(): AudioContext {
 	if (!audioContext) {
 		audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -37,14 +39,44 @@ export async function getGongBuffer(): Promise<AudioBuffer> {
 
 	try {
 		const ctx = getAudioContext();
-		const response = await fetch('/sounds/gong.m4a');
-		const arrayBuffer = await response.arrayBuffer();
-		gongBuffer = await ctx.decodeAudioData(arrayBuffer);
-		posthog.capture('audio_buffer_loaded', {
-			buffer_byte_length: arrayBuffer.byteLength,
+
+		const response = await fetch(SOUND_FILE);
+		const contentType = response.headers.get('Content-Type');
+		const contentLength = response.headers.get('Content-Length');
+
+		posthog.capture('audio_fetch_response', {
+			status: response.status,
+			ok: response.ok,
+			content_type: contentType,
+			content_length: contentLength,
 			user_agent: navigator.userAgent
 		});
-		return gongBuffer;
+
+		const arrayBuffer = await response.arrayBuffer();
+
+		posthog.capture('audio_arraybuffer_fetched', {
+			byte_length: arrayBuffer.byteLength,
+			user_agent: navigator.userAgent
+		});
+
+		try {
+			gongBuffer = await ctx.decodeAudioData(arrayBuffer);
+			posthog.capture('audio_buffer_loaded', {
+				buffer_byte_length: arrayBuffer.byteLength,
+				user_agent: navigator.userAgent
+			});
+			return gongBuffer;
+		} catch (decodeErr) {
+			posthog.capture('audio_buffer_decode_failed', {
+				error: String(decodeErr),
+				byte_length: arrayBuffer.byteLength,
+				content_type: contentType,
+				url: SOUND_FILE,
+				user_agent: navigator.userAgent,
+				language: navigator.language
+			});
+			throw decodeErr;
+		}
 	} catch (err) {
 		posthog.capture('audio_buffer_load_failed', {
 			error: String(err),

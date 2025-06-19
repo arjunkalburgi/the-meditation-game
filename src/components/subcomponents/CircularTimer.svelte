@@ -35,7 +35,8 @@
 		} catch (err) {
 			posthog.capture('audio_play_failed', {
 				error: String(err),
-				user_agent: navigator.userAgent
+				user_agent: navigator.userAgent,
+				language: navigator.language
 			});
 		}
 	};
