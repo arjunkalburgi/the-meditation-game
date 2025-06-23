@@ -3,7 +3,7 @@ import posthog from '$lib/posthog';
 let audioContext: AudioContext | null = null;
 let gongBuffer: AudioBuffer | null = null;
 
-const SOUND_FILE = '/sounds/gong.m4a';
+const SOUND_FILE = '/sounds/gong.mp4';
 
 export function getAudioContext(): AudioContext {
 	if (!audioContext) {
