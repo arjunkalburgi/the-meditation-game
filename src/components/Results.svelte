@@ -88,9 +88,15 @@
 	</div>
 
 	{#if meditationResults.clickTimestamps.length > 0}
-		<p class="text-lg mt-4">
-			You meditated for {getDurationText(meditationResults.durationMeditated)} and recorded {totalDistractions} distraction{totalDistractions === 1 ? '' : 's'}.
-		</p>
+		{#if meditationResults.isNewPersonalBest && meditationResults.personalBest}
+			<p class="text-lg mt-4 text-green-600">
+				New personal best 🎉 — {totalDistractions} tap{totalDistractions ? '' : 's'} over {getDurationText(meditationResults.durationMeditated)}.
+			</p>
+		{:else}
+			<p class="text-lg mt-4">
+				You meditated for {getDurationText(meditationResults.durationMeditated)} and recorded {totalDistractions} distraction{totalDistractions === 1 ? '' : 's'}.
+			</p>
+		{/if}
 		<p class="text-lg mt-2">
 			That's about {distractionRate} distraction{Number(distractionRate) === 1 ? '' : 's'} per minute.
 		</p>
@@ -98,11 +104,7 @@
 		<p class="text-lg mt-4">You completed your meditation distraction-free!</p>
 	{/if}
 
-	{#if meditationResults.isNewPersonalBest && meditationResults.personalBest}
-		<p class="mt-4 text-green-600 font-medium animate-fade-in">
-			New personal best 🎉 — {meditationResults.personalBest.tapCount} taps over {sToMin(meditationResults.personalBest.duration)} min.
-		</p>
-	{:else if meditationResults.personalBest}
+	{#if meditationResults.personalBest && !meditationResults.isNewPersonalBest}
 		<p class="mt-4 text-muted-foreground">
 			Best so far: {meditationResults.personalBest.tapCount} taps · {sToMin(meditationResults.personalBest.duration)} min.
 		</p>
@@ -142,6 +144,13 @@
 		<button class="btn variant-outlined px-4 py-2" on:click={handleExit}>
 			Exit
 		</button>
+	</div>
+	
+	<div class="absolute bottom-6 text-center text-sm text-gray-500">
+		<p>
+			Learn to meditate for real at 
+			<a href="https://www.dhamma.org" target="_blank" class="text-blue-500 underline">dhamma.org ↗</a>
+		</p>
 	</div>
 </div>
 
