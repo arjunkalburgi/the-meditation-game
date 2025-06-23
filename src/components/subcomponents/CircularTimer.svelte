@@ -27,11 +27,6 @@
 			source.buffer = buffer;
 			source.connect(ctx.destination);
 			source.start(0);
-
-			posthog.capture('audio_played_successfully', {
-				context_state: ctx.state,
-				user_agent: navigator.userAgent
-			});
 		} catch (err) {
 			posthog.capture('audio_play_failed', {
 				error: String(err),
