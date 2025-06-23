@@ -24,7 +24,7 @@
 
 	const getDurationText = (duration: number) => {
 		const minutes = Math.floor(duration / 60);
-		const seconds = duration % 60;
+		const seconds = Math.round(duration % 60 * 100) / 100;
 		if (minutes === 0) {
 			return seconds + ' second' + (seconds === 1 ? '' : 's');
 		}
@@ -72,7 +72,7 @@
 	{#if meditationResults.newStarRating > meditationResults.previousStarRating}
 		<p class="mt-2 text-lg text-accent-foreground font-semibold animate-fade-in">
 			{#if meditationResults.newStarRating === 3}
-				Mastered this level! ✨
+				You've mastered this level! ✨
 			{:else}
 				You earned +{meditationResults.newStarRating - meditationResults.previousStarRating} ⭐ — keep going!
 			{/if}
@@ -89,10 +89,10 @@
 
 	{#if meditationResults.clickTimestamps.length > 0}
 		<p class="text-lg mt-4">
-			You meditated for {getDurationText(meditationResults.durationMeditated)} and recorded {totalDistractions} {totalDistractions === 1 ? 'distraction' : 'distractions'}.
+			You meditated for {getDurationText(meditationResults.durationMeditated)} and recorded {totalDistractions} distraction{totalDistractions === 1 ? '' : 's'}.
 		</p>
 		<p class="text-lg mt-2">
-			That's about {distractionRate} {Number(distractionRate) === 1 ? 'distraction' : 'distractions'} per minute.
+			That's about {distractionRate} distraction{Number(distractionRate) === 1 ? '' : 's'} per minute.
 		</p>
 	{:else}
 		<p class="text-lg mt-4">You completed your meditation distraction-free!</p>
@@ -110,22 +110,26 @@
 
 	<h3 class="mt-6 font-semibold">Level tasks</h3>
 	{#if taskCompletion}
+		{#if meditationResults.newlyCompletedTasks.length > 0}
+			<p class="mt-2 text-sm text-accent-foreground">
+				Nice! You just completed {meditationResults.newlyCompletedTasks.length} new task{meditationResults.newlyCompletedTasks.length === 1 ? '' : 's'}.
+			</p>
+		{/if}
 		<ul class="mt-2 space-y-1 text-left max-h-40 overflow-y-auto">
 			{#each Object.entries(taskCompletion) as [_, task]}
 				<li class="flex items-center">
 					<span class="mr-2">
-						{task.completed ? '✅' : '🔲'} {task.description} {task.info}
+						{#if meditationResults.newlyCompletedTasks.some(t => t === task.id)}
+							✅ 🆕🏆 {task.description} {task.info} 
+						{:else if task.completed}
+							✅ {task.description} {task.info}
+						{:else}
+							🔲 {task.description} {task.info}
+						{/if}
 					</span>
 				</li>
 			{/each}
 		</ul>
-	{/if}
-
-
-	{#if meditationResults.newlyCompletedTasks.length > 0}
-		<p class="mt-2 text-sm text-accent-foreground">
-			Nice! You just completed {meditationResults.newlyCompletedTasks.length} task{meditationResults.newlyCompletedTasks.length === 1 ? '' : 's'}.
-		</p>
 	{/if}
 
 	<div class="mt-6 flex space-x-4">
@@ -138,18 +142,6 @@
 		<button class="btn variant-outlined px-4 py-2" on:click={handleExit}>
 			Exit
 		</button>
-	</div>
-	
-	<div class="absolute bottom-6 text-center text-sm text-gray-500">
-		<p>
-			Learn to meditate for real at 
-			<a href="https://www.dhamma.org" target="_blank" class="text-blue-500 underline">dhamma.org ↗</a>
-		</p>
-		<p class="mt-2">
-			This app was made by Arjun, PM with 5 years experience. 
-			Hire him to build your 0-1 consumer products! 
-			<a href="https://www.linkedin.com/in/arjunkalburgi" target="_blank" class="text-blue-500 underline">View LinkedIn ↗</a>
-		</p>
 	</div>
 </div>
 
