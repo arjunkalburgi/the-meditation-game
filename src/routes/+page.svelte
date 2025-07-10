@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import Modal from "$components/CoreLoop.svelte";
 	import DurationPicker from "$components/subcomponents/DurationPicker.svelte";
 	import { MeditationDuration } from "$lib/types";
@@ -12,6 +13,7 @@
 	let selectedLevel: string | null = null;
 	let levelStatuses: LevelStatus[] = [];
 	let loading: boolean = true;
+	let levelRefs: Array<HTMLElement | null> = [];
 
 	// Load page
 	$: if (!showModal) {
@@ -20,7 +22,8 @@
 			.then(s => {
 				levelStatuses = s;
 				s.forEach(({ level }) => {
-					level.selectedDuration = level.minDuration;
+					const savedLevelDur = localStorage.getItem('preferredDuration' + level.id);
+					level.selectedDuration = savedLevelDur ? parseInt(savedLevelDur) : level.minDuration;
 				});
 				loading = false;
 			})
@@ -28,6 +31,18 @@
 				console.error('Failed to reload level statuses:', error);
 				loading = false;
 			});
+	}
+
+	$: if (!loading) {
+		const indexToScroll = [...levelStatuses]
+			.map((l, i) => ({ i, rating: l.starRating ?? 0 }))
+			.find(({ rating }) => rating < 3)?.i;
+
+		if (indexToScroll !== undefined) {
+			tick().then(() => {
+				levelRefs[indexToScroll]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			});
+		}
 	}
 
 	const startMeditation = async () => {
@@ -48,8 +63,8 @@
 		</div>
 	{:else}
 		<div class="flex flex-col gap-6 mt-8 max-w-3xl mx-auto w-full">
-			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating, bestSession }}
-				<div class="card bg-[#ffffffa6] p-8 {!isUnlocked ? 'opacity-60' : ''}">
+			{#each levelStatuses as { level, isUnlocked, taskCompletion, starRating, bestSession }, i}
+				<div class="card bg-[#ffffffa6] p-8 {!isUnlocked ? 'opacity-60' : ''}" bind:this={levelRefs[i]}>
 					<div class="flex justify-between items-center mb-2">
 						<h3 class="text-lg font-bold">
 							{#if !isUnlocked}
@@ -95,7 +110,10 @@
 						<div class="space-y-6 mt-8">
 							<DurationPicker 
 								selectedDuration={level.selectedDuration} 
-								onDurationChange={(d) => level.selectedDuration = d}
+								onDurationChange={(d) => {
+									localStorage.setItem('preferredDuration' + level.id, d.toString());
+									level.selectedDuration = d
+								}}
 								minDuration={level.minDuration}
 								maxDuration={level.maxDuration}
 							/>

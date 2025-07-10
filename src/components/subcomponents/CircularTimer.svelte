@@ -73,7 +73,7 @@
 </script>
 
 <svg class="w-32 h-32" viewBox="0 0 100 100">
-	<circle cx="50" cy="50" r="40" stroke="gray" stroke-width="5" fill="none" />
+	<circle cx="50" cy="50" r="40" stroke="lightgray" stroke-width="5" fill="none" />
 	<circle
 		cx="50"
 		cy="50"
@@ -85,5 +85,5 @@
 		stroke-dashoffset="{251.2 * $percentageTimeLeft}"
 		transform="rotate(-90 50 50)"
 	/>
-	<text x="50" y="55" font-size="14" text-anchor="middle" fill="black">{$formattedTime}</text>
+	<text x="50" y="55" font-size="14" text-anchor="middle" fill="gray">{$formattedTime}</text>
 </svg>

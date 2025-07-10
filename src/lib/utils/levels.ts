@@ -173,7 +173,7 @@ export const focusLevels: FocusLevel[] = [
             "If there’s frustration or judgment, notice that too — and let it go"
         ],
         completionTasks: [
-            { id: 'two_sessions_under_5_taps', description: 'Have 2 sessions in a row with fewer than 5 taps' },
+            { id: 'two_sessions_under_5_taps', description: 'Have 2 sessions in a row with 5 taps or fewer' },
             { id: 'one_min_no_taps_twice', description: 'Go 1 minute without a tap in 2 separate sessions' },
             { id: 'improve_tap_count_2_sessions', description: 'Improve your tap count in 2 sessions' },
             { id: 'max_duration', description: 'Complete a session with max duration' }

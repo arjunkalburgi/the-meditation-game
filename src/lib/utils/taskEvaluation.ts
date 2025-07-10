@@ -3,18 +3,18 @@ import type { TaskCompletionStatus, FocusLevel } from '$lib/types/gamification';
 import { countImprovements, longestNoTapStreak, countMatching, anyMatching } from './gamification';
 
 export const taskEvaluators: Record< string, (sessions: MeditationSession[], level: FocusLevel) => TaskCompletionStatus> = {
-    tap_once: ([first]) => ({
-        completed: first?.tapCount >= 1,
+    tap_once: (sessions) => ({
+        completed: anyMatching(sessions, s => s.tapCount >= 1),
         info: ''
     }),
-    
-    no_early_exit: ([first]) => ({
-        completed: first?.completed === true,
+
+    no_early_exit: (sessions) => ({
+        completed: anyMatching(sessions, s => s.completed === true),
         info: ''
     }),
-    
-    session_under_5_taps: ([first]) => ({
-        completed: first?.tapCount <= 5,
+
+    session_under_5_taps: (sessions) => ({
+        completed: anyMatching(sessions, s => s.tapCount <= 5),
         info: ''
     }),
     
@@ -28,11 +28,11 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
         info: ''
     }),
     
-    distractions_early_on: ([first]) => ({
-        completed: first?.tapTimestamps?.filter(t => t <= 60).length >= 2,
+    distractions_early_on: (sessions) => ({
+        completed: anyMatching(sessions, s => (s.tapTimestamps?.filter(t => t <= 60).length ?? 0) >= 2),
         info: ''
     }),
-    
+
     complete_2_sessions: (sessions) => ({
         completed: sessions.length >= 2,
         info: sessions.length === 0 || sessions.length >= 2 ? '' : `(1/2 complete)`,
@@ -46,7 +46,7 @@ export const taskEvaluators: Record< string, (sessions: MeditationSession[], lev
     two_sessions_under_5_taps: (sessions) => {
         let streak = 0;
         for (let i = sessions.length - 1; i >= 0; i--) {
-            if (sessions[i].tapCount < 5) {
+            if (sessions[i].tapCount <= 5) {
                 streak++;
                 if (streak === 2) break;
             } else {
